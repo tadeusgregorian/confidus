@@ -152,7 +152,7 @@ export default function LessonPlayerScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <StatusBar style="auto" />
+      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
       
       {/* Header with back button */}
       <ThemedView style={styles.header}>
@@ -170,15 +170,17 @@ export default function LessonPlayerScreen() {
       {/* Lesson content */}
       <ThemedView style={styles.content}>
         <ThemedView style={styles.albumArtContainer}>
-          <ThemedView style={[styles.albumArt, { backgroundColor: colors.icon + '20' }]}>
-            <IconSymbol name="music.note" size={64} color={colors.icon} />
+          <ThemedView style={[styles.albumArt, { backgroundColor: colors.tabBar }]}>
+            <IconSymbol name="music.note" size={64} color={colors.muted} />
           </ThemedView>
         </ThemedView>
 
         <ThemedText type="title" style={styles.lessonTitle}>
           {lesson.title}
         </ThemedText>
-        <ThemedText style={styles.lessonDescription}>{lesson.description}</ThemedText>
+        <ThemedText style={[styles.lessonDescription, { color: colors.muted }]}>
+          {lesson.description}
+        </ThemedText>
 
         {/* Progress bar */}
         <ThemedView style={styles.progressContainer}>
@@ -194,10 +196,10 @@ export default function LessonPlayerScreen() {
             />
           </ThemedView>
           <ThemedView style={styles.timeContainer}>
-            <ThemedText style={styles.timeText}>
+            <ThemedText style={[styles.timeText, { color: colors.mutedLight }]}>
               {formatTime(position)}
             </ThemedText>
-            <ThemedText style={styles.timeText}>
+            <ThemedText style={[styles.timeText, { color: colors.mutedLight }]}>
               {formatTime(
                 duration ||
                   (parseInt(lesson.duration.split(':')[0]) * 60000 +
@@ -223,12 +225,12 @@ export default function LessonPlayerScreen() {
             ]}
             disabled={isLoading}>
             {isLoading ? (
-              <ActivityIndicator color={colors.background} />
+              <ActivityIndicator color={colors.card} />
             ) : (
               <IconSymbol
                 name={isPlaying ? 'pause.fill' : 'play.fill'}
                 size={48}
-                color={colors.background}
+                color={colors.card}
               />
             )}
           </Pressable>
@@ -277,14 +279,14 @@ const styles = StyleSheet.create({
   albumArt: {
     width: 240,
     height: 240,
-    borderRadius: 16,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 4,
   },
   lessonTitle: {
     textAlign: 'center',
@@ -292,7 +294,6 @@ const styles = StyleSheet.create({
   },
   lessonDescription: {
     textAlign: 'center',
-    opacity: 0.7,
     marginBottom: 48,
     paddingHorizontal: 20,
   },
@@ -302,7 +303,7 @@ const styles = StyleSheet.create({
   },
   progressBar: {
     height: 4,
-    backgroundColor: '#E0E0E0',
+    backgroundColor: '#E0E6EB',
     borderRadius: 2,
     marginBottom: 12,
     overflow: 'hidden',
@@ -317,7 +318,6 @@ const styles = StyleSheet.create({
   },
   timeText: {
     fontSize: 12,
-    opacity: 0.6,
   },
   controls: {
     flexDirection: 'row',
@@ -335,9 +335,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
   },
 });

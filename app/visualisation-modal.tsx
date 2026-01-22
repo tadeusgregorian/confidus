@@ -179,7 +179,7 @@ export default function VisualisationModal() {
 
   return (
     <ThemedView style={styles.container}>
-      <StatusBar style="auto" />
+      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
       
       <ThemedView style={styles.content}>
         {getStepContent()}
@@ -196,7 +196,7 @@ export default function VisualisationModal() {
               { backgroundColor: colors.tint },
               pressed && { opacity: 0.8 },
             ]}>
-            <ThemedText style={[styles.doneButtonText, { color: colors.background }]}>
+            <ThemedText style={[styles.doneButtonText, { color: colors.card }]}>
               {getButtonText()}
             </ThemedText>
           </Pressable>
@@ -262,13 +262,13 @@ const styles = StyleSheet.create({
   doneButton: {
     paddingVertical: 16,
     paddingHorizontal: 32,
-    borderRadius: 12,
+    borderRadius: 16,
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 4,
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
   },
   doneButtonText: {
     fontSize: 16,

@@ -2,8 +2,8 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 type SettingSection = {
   title: string;
@@ -30,42 +30,44 @@ export default function ProfileScreen() {
   const colors = Colors[colorScheme ?? 'light'];
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
       <ThemedView style={styles.header}>
-        <ThemedView style={[styles.avatarContainer, { borderColor: colors.icon }]}>
+        <View style={[styles.avatarContainer, { backgroundColor: colors.tabBar }]}>
           <ThemedText type="title" style={styles.avatarText}>
             JD
           </ThemedText>
-        </ThemedView>
+        </View>
         <ThemedText type="title" style={styles.userName}>
           John Doe
         </ThemedText>
-        <ThemedText style={styles.userEmail}>john.doe@example.com</ThemedText>
+        <ThemedText style={[styles.userEmail, { color: colors.muted }]}>
+          john.doe@example.com
+        </ThemedText>
       </ThemedView>
 
-      <ThemedView style={styles.settingsContainer}>
+      <View style={styles.settingsContainer}>
         {dummySettings.map((section, sectionIndex) => (
-          <ThemedView key={sectionIndex} style={styles.section}>
+          <View key={sectionIndex} style={styles.section}>
             <ThemedText type="subtitle" style={styles.sectionTitle}>
               {section.title}
             </ThemedText>
-            <ThemedView style={styles.sectionContent}>
+            <View style={[styles.sectionContent, { backgroundColor: colors.card }]}>
               {section.items.map((item, itemIndex) => (
-                <ThemedView
+                <View
                   key={itemIndex}
                   style={[
                     styles.settingItem,
                     itemIndex < section.items.length - 1 && styles.settingItemBorder,
-                    { borderColor: colors.icon },
+                    { borderColor: colors.tabBar },
                   ]}>
                   <ThemedText style={styles.settingItemText}>{item}</ThemedText>
-                  <ThemedText style={styles.chevron}>›</ThemedText>
-                </ThemedView>
+                  <ThemedText style={[styles.chevron, { color: colors.mutedLight }]}>›</ThemedText>
+                </View>
               ))}
-            </ThemedView>
-          </ThemedView>
+            </View>
+          </View>
         ))}
-      </ThemedView>
+      </View>
     </ScrollView>
   );
 }
@@ -84,14 +86,12 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    borderWidth: 2,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
-    backgroundColor: '#E0E0E0',
   },
   avatarText: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: 'bold',
   },
   userName: {
@@ -99,7 +99,6 @@ const styles = StyleSheet.create({
   },
   userEmail: {
     fontSize: 14,
-    opacity: 0.7,
   },
   settingsContainer: {
     padding: 16,
@@ -112,16 +111,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   sectionContent: {
-    borderRadius: 12,
+    borderRadius: 16,
     overflow: 'hidden',
-    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
   },
   settingItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 16,
-    backgroundColor: 'transparent',
   },
   settingItemBorder: {
     borderBottomWidth: 1,
@@ -130,7 +132,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   chevron: {
-    fontSize: 24,
-    opacity: 0.5,
+    fontSize: 22,
   },
 });

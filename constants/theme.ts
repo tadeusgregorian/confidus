@@ -1,29 +1,38 @@
 /**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
+ * App colors aligned with a clean, calm mindfulness aesthetic.
+ * Light: soft off-white background, dark charcoal primary, muted greys.
  */
 
 import { Platform } from 'react-native';
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
-
 export const Colors = {
   light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
+    text: '#1A1A1A',
+    background: '#F5F8FA',
+    tint: '#1A1A1A',
+    icon: '#1A1A1A',
+    tabIconDefault: '#555555',
+    tabIconSelected: '#1A1A1A',
+    muted: '#555555',
+    mutedLight: '#AAAAAA',
+    card: '#FFFFFF',
+    tabBar: '#E0E6EB',
+    tabBarActiveBg: '#FFFFFF',
+    link: '#555555',
   },
   dark: {
     text: '#ECEDEE',
     background: '#151718',
-    tint: tintColorDark,
+    tint: '#ECEDEE',
     icon: '#9BA1A6',
     tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
+    tabIconSelected: '#ECEDEE',
+    muted: '#9BA1A6',
+    mutedLight: '#687076',
+    card: '#1C1E1F',
+    tabBar: '#1C1E1F',
+    tabBarActiveBg: '#2A2D2E',
+    link: '#9BA1A6',
   },
 };
 

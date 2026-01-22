@@ -59,15 +59,15 @@ export default function VisualisationsScreen() {
       </ThemedView>
 
       <ThemedView style={styles.content}>
-        {!isCompleted ? (
+        {isCompleted ? (
           <ThemedView style={styles.completedContainer}>
-            <View style={[styles.checkmarkCircle, { backgroundColor: colors.tint + '20' }]}>
+            <View style={[styles.checkmarkCircle, { backgroundColor: colors.tabBar }]}>
               <IconSymbol name="checkmark" size={48} color={colors.tint} />
             </View>
             <ThemedText type="subtitle" style={styles.completedText}>
               Todays visualisation done
             </ThemedText>
-            <ThemedText style={styles.completedSubtext}>
+            <ThemedText style={[styles.completedSubtext, { color: colors.muted }]}>
               You have completed your daily visualization. Come back tomorrow for a new experience.
             </ThemedText>
           </ThemedView>
@@ -76,7 +76,7 @@ export default function VisualisationsScreen() {
             <ThemedText type="subtitle" style={styles.startTitle}>
               Daily Visualisation
             </ThemedText>
-            <ThemedText style={styles.startDescription}>
+            <ThemedText style={[styles.startDescription, { color: colors.muted }]}>
               Take a moment to center yourself with a guided breathing exercise and visualization.
             </ThemedText>
             <Pressable
@@ -84,9 +84,9 @@ export default function VisualisationsScreen() {
               style={({ pressed }) => [
                 styles.startButton,
                 { backgroundColor: colors.tint },
-                pressed && { opacity: 0.8 },
+                pressed && { opacity: 0.85 },
               ]}>
-              <ThemedText style={[styles.startButtonText, { color: colors.background }]}>
+              <ThemedText style={[styles.startButtonText, { color: colors.card }]}>
                 Start visualisation
               </ThemedText>
             </Pressable>
@@ -130,7 +130,6 @@ const styles = StyleSheet.create({
   },
   completedSubtext: {
     textAlign: 'center',
-    opacity: 0.7,
     fontSize: 14,
     lineHeight: 20,
   },
@@ -144,7 +143,6 @@ const styles = StyleSheet.create({
   },
   startDescription: {
     textAlign: 'center',
-    opacity: 0.7,
     fontSize: 14,
     lineHeight: 20,
     marginBottom: 32,
@@ -152,14 +150,14 @@ const styles = StyleSheet.create({
   startButton: {
     paddingVertical: 16,
     paddingHorizontal: 32,
-    borderRadius: 12,
+    borderRadius: 16,
     minWidth: 200,
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 4,
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
   },
   startButtonText: {
     fontSize: 16,
