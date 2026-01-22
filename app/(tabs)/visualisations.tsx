@@ -1,13 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { useRouter, useFocusEffect } from 'expo-router';
-import { useCallback } from 'react';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { isVisualisationCompletedToday } from '@/utils/storage';
 
 export default function VisualisationsScreen() {
@@ -60,16 +59,16 @@ export default function VisualisationsScreen() {
       </ThemedView>
 
       <ThemedView style={styles.content}>
-        {isCompleted ? (
+        {!isCompleted ? (
           <ThemedView style={styles.completedContainer}>
             <View style={[styles.checkmarkCircle, { backgroundColor: colors.tint + '20' }]}>
               <IconSymbol name="checkmark" size={48} color={colors.tint} />
             </View>
             <ThemedText type="subtitle" style={styles.completedText}>
-              Today's visualisation done
+              Todays visualisation done
             </ThemedText>
             <ThemedText style={styles.completedSubtext}>
-              You've completed your daily visualization. Come back tomorrow for a new experience.
+              You have completed your daily visualization. Come back tomorrow for a new experience.
             </ThemedText>
           </ThemedView>
         ) : (
