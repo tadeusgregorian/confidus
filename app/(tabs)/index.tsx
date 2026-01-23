@@ -18,6 +18,13 @@ type Lesson = {
 
 const dummyLessons: Lesson[] = [
   {
+    id: 'intro',
+    title: 'Welcome to Your Journey',
+    description: 'Begin your path to mindfulness and personal growth with this comprehensive introduction',
+    tag: 'theory',
+    duration: '20:00',
+  },
+  {
     id: '1',
     title: 'Introduction to React Native',
     description: 'Learn the fundamentals of React Native development',
@@ -66,53 +73,105 @@ export default function LessonsScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
 
-  const renderLessonItem = ({ item }: { item: Lesson }) => (
-    <Pressable
-      style={({ pressed }) => [
-        styles.lessonItem,
-        { backgroundColor: colors.card },
-        pressed && { opacity: 0.9 },
-      ]}
-      onPress={() => router.push(`/lesson/${item.id}`)}>
-      <View style={styles.lessonContent}>
-        <Image
-          source={{ uri: `https://picsum.photos/seed/${item.id}-dark/200/200` }}
-          style={styles.lessonImage}
-          contentFit="cover"
-          transition={200}
-        />
-        <View style={styles.lessonTextContainer}>
-          <ThemedText type="cardTitle" style={[styles.lessonTitle, { color: colors.text }]}>
-            {item.title}
-          </ThemedText>
-          <ThemedText style={[styles.lessonDescription, { color: colors.muted }]} numberOfLines={2}>
-            {item.description}
-          </ThemedText>
-          <View style={styles.tagRow}>
-            <View style={[
-              styles.tag,
-              item.tag === 'theory' 
-                ? { backgroundColor: '#DBEAFE' } 
-                : { backgroundColor: '#EDE9FE' }
-            ]}>
-              <ThemedText style={[
-                styles.tagText,
-                { color: item.tag === 'theory' ? '#3B82F6' : '#8B5CF6' }
-              ]}>
-                {item.tag === 'theory' ? 'Theory' : 'Meditation'}
-              </ThemedText>
-            </View>
-            <ThemedText style={[styles.duration, { color: colors.mutedLight }]}>
-              {item.duration}
+  const renderLessonItem = ({ item, index }: { item: Lesson; index: number }) => {
+    const isIntro = item.id === 'intro';
+    
+    if (isIntro) {
+      return (
+        <Pressable
+          style={({ pressed }) => [
+            styles.introLessonItem,
+            { backgroundColor: colors.card },
+            pressed && { opacity: 0.9 },
+          ]}
+          onPress={() => router.push(`/lesson/${item.id}`)}>
+          <Image
+            source={{ uri: `https://picsum.photos/seed/${item.id}-dark/400/300` }}
+            style={styles.introImage}
+            contentFit="cover"
+            transition={200}
+          />
+          <View style={styles.introTextContainer}>
+            <ThemedText type="cardTitle" style={[styles.introTitle, { color: colors.text }]}>
+              {item.title}
             </ThemedText>
-            <View style={styles.headphonesIconContainer}>
-              <IconSymbol name="headphones" size={18} color={colors.muted} />
+            <ThemedText style={[styles.introDescription, { color: colors.muted }]}>
+              {item.description}
+            </ThemedText>
+            <View style={styles.introTagRow}>
+              <View style={[
+                styles.tag,
+                item.tag === 'theory' 
+                  ? { backgroundColor: '#DBEAFE' } 
+                  : { backgroundColor: '#EDE9FE' }
+              ]}>
+                <ThemedText style={[
+                  styles.tagText,
+                  { color: item.tag === 'theory' ? '#3B82F6' : '#8B5CF6' }
+                ]}>
+                  {item.tag === 'theory' ? 'Theory' : 'Meditation'}
+                </ThemedText>
+              </View>
+              <ThemedText style={[styles.duration, { color: colors.mutedLight }]}>
+                {item.duration}
+              </ThemedText>
+              <View style={styles.headphonesIconContainer}>
+                <IconSymbol name="headphones" size={18} color={colors.muted} />
+              </View>
+            </View>
+          </View>
+        </Pressable>
+      );
+    }
+
+    return (
+      <Pressable
+        style={({ pressed }) => [
+          styles.lessonItem,
+          { backgroundColor: colors.card },
+          pressed && { opacity: 0.9 },
+        ]}
+        onPress={() => router.push(`/lesson/${item.id}`)}>
+        <View style={styles.lessonContent}>
+          <Image
+            source={{ uri: `https://picsum.photos/seed/${item.id}-dark/200/200` }}
+            style={styles.lessonImage}
+            contentFit="cover"
+            transition={200}
+          />
+          <View style={styles.lessonTextContainer}>
+            <ThemedText type="cardTitle" style={[styles.lessonTitle, { color: colors.text }]}>
+              {item.title}
+            </ThemedText>
+            <ThemedText style={[styles.lessonDescription, { color: colors.muted }]} numberOfLines={2}>
+              {item.description}
+            </ThemedText>
+            <View style={styles.tagRow}>
+              <View style={[
+                styles.tag,
+                item.tag === 'theory' 
+                  ? { backgroundColor: '#DBEAFE' } 
+                  : { backgroundColor: '#EDE9FE' }
+              ]}>
+                <ThemedText style={[
+                  styles.tagText,
+                  { color: item.tag === 'theory' ? '#3B82F6' : '#8B5CF6' }
+                ]}>
+                  {item.tag === 'theory' ? 'Theory' : 'Meditation'}
+                </ThemedText>
+              </View>
+              <ThemedText style={[styles.duration, { color: colors.mutedLight }]}>
+                {item.duration}
+              </ThemedText>
+              <View style={styles.headphonesIconContainer}>
+                <IconSymbol name="headphones" size={18} color={colors.muted} />
+              </View>
             </View>
           </View>
         </View>
-      </View>
-    </Pressable>
-  );
+      </Pressable>
+    );
+  };
 
   return (
     <ThemedView style={styles.container}>
@@ -121,7 +180,7 @@ export default function LessonsScreen() {
       </ThemedView>
       <FlatList
         data={dummyLessons}
-        renderItem={renderLessonItem}
+        renderItem={({ item, index }) => renderLessonItem({ item, index })}
         keyExtractor={(item) => item.id}
         contentContainerStyle={[styles.listContent, { backgroundColor: colors.background }]}
         style={[styles.list, { backgroundColor: colors.background }]}
@@ -213,5 +272,38 @@ const styles = StyleSheet.create({
   duration: {
     fontSize: 10,
     marginRight: 4
+  },
+  introLessonItem: {
+    borderRadius: 16,
+    marginBottom: 12,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  introImage: {
+    width: '100%',
+    height: 200,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    backgroundColor: '#E0E6EB',
+  },
+  introTextContainer: {
+    padding: 16,
+  },
+  introTitle: {
+    fontSize: 18,
+    marginBottom: 8,
+  },
+  introDescription: {
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 12,
+  },
+  introTagRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 });
