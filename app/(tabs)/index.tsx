@@ -16,6 +16,7 @@ type Lesson = {
   tag: "theory" | "meditation";
   duration: string;
   separationLine?: boolean;
+  sectionNumber?: number;
 };
 
 const dummyLessons: Lesson[] = [
@@ -27,6 +28,7 @@ const dummyLessons: Lesson[] = [
     tag: "theory",
     duration: "20:00",
     separationLine: true,
+    sectionNumber: 1,
   },
   {
     id: "1",
@@ -42,32 +44,49 @@ const dummyLessons: Lesson[] = [
     tag: "meditation",
     duration: "12:45",
     separationLine: true,
+    sectionNumber: 2,
   },
   {
     id: "3",
-    title: "State Management Basics",
-    description: "Understanding state and props in React Native",
+    title: "Susan Cain",
+    description: "Introversion Is Not Shyness",
     tag: "theory",
     duration: "18:20",
   },
   {
     id: "4",
-    title: "Navigation and Routing",
-    description: "Implement navigation between screens",
+    title: "Susan Cain",
+    description: "Introversion Is Not Shyness",
     tag: "meditation",
     duration: "22:10",
+    separationLine: true,
+    sectionNumber: 3,
   },
   {
     id: "5",
-    title: "Working with APIs",
-    description: "Fetch and display data from remote sources",
+    title: "Susan Jeffers ",
+    description: "Confident people act despite fear",
     tag: "theory",
     duration: "16:55",
   },
   {
     id: "6",
-    title: "Styling and Theming",
-    description: "Create beautiful UIs with styled components",
+    title: "Susan Jeffers ",
+    description: "Confident people act despite fear",
+    tag: "meditation",
+    duration: "14:30",
+  },
+  {
+    id: "7",
+    title: "Jon Kabat-Zinn",
+    description: "Full Catastrophe Living",
+    tag: "theory",
+    duration: "16:55",
+  },
+  {
+    id: "8",
+    title: "Jon Kabat-Zinn",
+    description: "Full Catastrophe Living",
     tag: "meditation",
     duration: "14:30",
   },
@@ -151,7 +170,17 @@ export default function LessonsScreen() {
               </View>
             </View>
           </Pressable>
-          {item.separationLine && <View style={styles.separationLine} />}
+          {item.separationLine && (
+            <View style={styles.separationContainer}>
+              <View style={styles.separationLine} />
+              <View style={styles.sectionNumberContainer}>
+                <ThemedText style={[styles.sectionNumber, { color: colors.mutedLight }]}>
+                  {item.sectionNumber}
+                </ThemedText>
+              </View>
+              <View style={styles.separationLine} />
+            </View>
+          )}
         </View>
       );
     }
@@ -222,7 +251,17 @@ export default function LessonsScreen() {
             </View>
           </View>
         </Pressable>
-        {item.separationLine && <View style={styles.separationLine} />}
+        {item.separationLine && (
+          <View style={styles.separationContainer}>
+            <View style={styles.separationLine} />
+            <View style={styles.sectionNumberContainer}>
+              <ThemedText style={[styles.sectionNumber, { color: colors.mutedLight }]}>
+                {item.sectionNumber}
+              </ThemedText>
+            </View>
+            <View style={styles.separationLine} />
+          </View>
+        )}
       </View>
     );
   };
@@ -357,11 +396,24 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
+  separationContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 16,
+    marginBottom: 4,
+    marginHorizontal: 16,
+  },
   separationLine: {
+    flex: 1,
     height: 1,
     backgroundColor: "#E0E6EB",
-    marginTop: 12,
-    marginBottom: 0,
-    marginHorizontal: 16,
+  },
+  sectionNumberContainer: {
+    paddingHorizontal: 12,
+  },
+  sectionNumber: {
+    fontSize: 13,
+    fontWeight: "500",
+    fontFamily: "Inter_600SemiBold",
   },
 });
