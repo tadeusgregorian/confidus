@@ -53,8 +53,8 @@ export function CustomTabBar({
 
         const getIconName = () => {
           if (route.name === "index") return "book-open";
+          if (route.name === "moments") return "bolt";
           if (route.name === "visualisations") return "brain";
-          if (route.name === "profile") return "user";
           return "circle";
         };
 

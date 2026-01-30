@@ -20,8 +20,8 @@ export function CustomTabButton(props: CustomTabButtonProps) {
   const getLabel = () => {
     if (!routeName) return "";
     if (routeName === "index") return "Lessons";
+    if (routeName === "moments") return "Moments";
     if (routeName === "visualisations") return "Mind";
-    if (routeName === "profile") return "Profile";
     return "";
   };
 
