@@ -1,10 +1,11 @@
 import { FontAwesome5 } from "@expo/vector-icons";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Platform, StyleSheet, View, useWindowDimensions } from "react-native";
 
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { isVisualisationOverdue } from "@/utils/storage";
 import { CustomTabButton } from "./custom-tab-button";
 
 export function CustomTabBar({
@@ -15,6 +16,16 @@ export function CustomTabBar({
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
   const { width: SCREEN_WIDTH } = useWindowDimensions();
+  const [showVisualisationBadge, setShowVisualisationBadge] = useState(false);
+
+  useEffect(() => {
+    checkOverdue()
+  }, []);
+
+  const checkOverdue = async () => {
+    const overdue = await isVisualisationOverdue();
+    setShowVisualisationBadge(overdue);
+  };
 
   return (
     <View
@@ -58,6 +69,8 @@ export function CustomTabBar({
           return "circle";
         };
 
+        const showBadge = route.name === "visualisations" && showVisualisationBadge ;
+
         return (
           <CustomTabButton
             key={route.key}
@@ -67,12 +80,15 @@ export function CustomTabBar({
             onLongPress={onLongPress}
             routeName={route.name}
           >
-            <FontAwesome5
-              name={getIconName()}
-              size={18}
-              color={isFocused ? colors.tabIconSelected : colors.tabIconDefault}
-              solid
-            />
+            <View>
+              <FontAwesome5
+                name={getIconName()}
+                size={18}
+                color={isFocused ? colors.tabIconSelected : colors.tabIconDefault}
+                solid
+              />
+              {showBadge && <View style={styles.badge} />}
+            </View>
           </CustomTabButton>
         );
       })}
@@ -95,5 +111,14 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 12,
     elevation: 8,
+  },
+  badge: {
+    position: "absolute",
+    top: -2,
+    right: -4,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#EF4444",
   },
 });
