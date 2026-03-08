@@ -5,7 +5,9 @@ import { SymbolWeight, SymbolViewProps } from 'expo-symbols';
 import { ComponentProps } from 'react';
 import { OpaqueColorValue, type StyleProp, type TextStyle } from 'react-native';
 
-type IconMapping = Record<SymbolViewProps['name'], ComponentProps<typeof MaterialIcons>['name']>;
+type IconMapping = Partial<
+  Record<SymbolViewProps['name'], ComponentProps<typeof MaterialIcons>['name']>
+>;
 type IconSymbolName = keyof typeof MAPPING;
 
 /**
@@ -18,6 +20,14 @@ const MAPPING = {
   'paperplane.fill': 'send',
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
+  'play.fill': 'play-arrow',
+  checkmark: 'check',
+  headphones: 'headset',
+  bolt: 'bolt',
+  brain: 'psychology',
+  'book-open': 'menu-book',
+  clock: 'schedule',
+  sparkles: 'auto-awesome',
 } as IconMapping;
 
 /**
@@ -37,5 +47,12 @@ export function IconSymbol({
   style?: StyleProp<TextStyle>;
   weight?: SymbolWeight;
 }) {
-  return <MaterialIcons color={color} size={size} name={MAPPING[name]} style={style} />;
+  return (
+    <MaterialIcons
+      color={color}
+      size={size}
+      name={MAPPING[name] ?? 'help-outline'}
+      style={style}
+    />
+  );
 }

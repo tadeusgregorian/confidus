@@ -30,8 +30,15 @@ export function CustomTabButton(props: CustomTabButtonProps) {
       {...pressableProps}
       style={[
         styles.button,
+        { borderColor: colors.hairline },
         isSelected
-          ? [styles.selectedButton, { backgroundColor: colors.tabBarActiveBg }]
+          ? [
+              styles.selectedButton,
+              {
+                backgroundColor: colors.tabBarActiveBg,
+                borderColor: "rgba(255,255,255,0.12)",
+              },
+            ]
           : [
               styles.unselectedButton,
               { backgroundColor: colors.tabBarInactiveBg },
@@ -60,18 +67,19 @@ const styles = StyleSheet.create({
   button: {
     alignItems: "center",
     justifyContent: "center",
+    borderWidth: 1,
   },
   unselectedButton: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
+    width: 54,
+    height: 54,
+    borderRadius: 27,
   },
   selectedButton: {
-    paddingHorizontal: 16,
-    height: 52,
-    borderRadius: 26,
+    paddingHorizontal: 14,
+    height: 54,
+    borderRadius: 27,
     flexDirection: "row",
-    width: 110,
+    minWidth: 112,
   },
   content: {
     flexDirection: "row",
@@ -80,8 +88,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   label: {
-    fontSize: 14,
-    fontWeight: "600",
+    fontSize: 13,
     fontFamily: "Inter_600SemiBold",
+    letterSpacing: 0.2,
   },
 });
