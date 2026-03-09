@@ -9,86 +9,66 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
-type Lesson = {
+type AudioLesson = {
   id: string;
   title: string;
-  description: string;
-  tag: 'theory' | 'meditation';
+  category: 'theory' | 'meditation';
   duration: string;
-  separationLine?: boolean;
-  sectionNumber?: number;
 };
 
-const dummyLessons: Lesson[] = [
+type LessonGroup = {
+  id: string;
+  author: string;
+  description: string;
+  imageUrl: string;
+  accentColor: string;
+  lessons: [AudioLesson, AudioLesson];
+};
+
+const lessonGroups: LessonGroup[] = [
   {
-    id: 'intro',
-    title: 'Introduction',
-    description:
-      'Start your journey here. It explains the Lessons and how the App works.',
-    tag: 'theory',
-    duration: '20:00',
-    separationLine: true,
-    sectionNumber: 1,
-  },
-  {
-    id: '1',
-    title: 'Gillian Butler',
+    id: 'butler',
+    author: 'Gillian Butler',
     description: 'Confidence Comes After Action',
-    tag: 'theory',
-    duration: '15:30',
+    imageUrl: 'https://picsum.photos/seed/lesson-butler/900/600',
+    accentColor: '#4F46E5',
+    lessons: [
+      { id: '1', title: 'Confidence Comes After Action', category: 'theory', duration: '15:30' },
+      { id: '2', title: 'Confidence Comes After Action', category: 'meditation', duration: '12:45' },
+    ],
   },
   {
-    id: '2',
-    title: 'Gillian Butler',
-    description: 'Confidence Comes After Action',
-    tag: 'meditation',
-    duration: '12:45',
-    separationLine: true,
-    sectionNumber: 2,
-  },
-  {
-    id: '3',
-    title: 'Susan Cain',
+    id: 'cain',
+    author: 'Susan Cain',
     description: 'Introversion Is Not Shyness',
-    tag: 'theory',
-    duration: '18:20',
+    imageUrl: 'https://picsum.photos/seed/lesson-cain/900/600',
+    accentColor: '#DB2777',
+    lessons: [
+      { id: '3', title: 'Introversion Is Not Shyness', category: 'theory', duration: '18:20' },
+      { id: '4', title: 'Introversion Is Not Shyness', category: 'meditation', duration: '22:10' },
+    ],
   },
   {
-    id: '4',
-    title: 'Susan Cain',
-    description: 'Introversion Is Not Shyness',
-    tag: 'meditation',
-    duration: '22:10',
-    separationLine: true,
-    sectionNumber: 3,
+    id: 'jeffers',
+    author: 'Susan Jeffers',
+    description: 'Confident People Act Despite Fear',
+    imageUrl: 'https://picsum.photos/seed/lesson-jeffers/900/600',
+    accentColor: '#7C3AED',
+    lessons: [
+      { id: '5', title: 'Confident People Act Despite Fear', category: 'theory', duration: '16:55' },
+      { id: '6', title: 'Confident People Act Despite Fear', category: 'meditation', duration: '14:30' },
+    ],
   },
   {
-    id: '5',
-    title: 'Susan Jeffers ',
-    description: 'Confident people act despite fear',
-    tag: 'theory',
-    duration: '16:55',
-  },
-  {
-    id: '6',
-    title: 'Susan Jeffers ',
-    description: 'Confident people act despite fear',
-    tag: 'meditation',
-    duration: '14:30',
-  },
-  {
-    id: '7',
-    title: 'Jon Kabat-Zinn',
+    id: 'kabat-zinn',
+    author: 'Jon Kabat-Zinn',
     description: 'Full Catastrophe Living',
-    tag: 'theory',
-    duration: '16:55',
-  },
-  {
-    id: '8',
-    title: 'Jon Kabat-Zinn',
-    description: 'Full Catastrophe Living',
-    tag: 'meditation',
-    duration: '14:30',
+    imageUrl: 'https://picsum.photos/seed/lesson-kabat-zinn/900/600',
+    accentColor: '#D97706',
+    lessons: [
+      { id: '7', title: 'Full Catastrophe Living', category: 'theory', duration: '16:55' },
+      { id: '8', title: 'Full Catastrophe Living', category: 'meditation', duration: '14:30' },
+    ],
   },
 ];
 
@@ -97,200 +77,127 @@ export default function LessonsScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
 
-  const isDark = (colorScheme ?? 'light') === 'dark';
-
-  const tagStyles = (tag: Lesson['tag']) => {
-    if (tag === 'theory') {
-      return {
-        bg: isDark ? '#172554' : '#DBEAFE',
-        text: isDark ? '#BFDBFE' : '#1D4ED8',
-        label: 'Theory',
-      };
-    }
-
-    return {
-      bg: isDark ? '#3B0764' : '#F3E8FF',
-      text: isDark ? '#E9D5FF' : '#7E22CE',
-      label: 'Meditation',
-    };
-  };
-
-  const renderSeparator = (item: Lesson) =>
-    item.separationLine ? (
-      <View style={styles.separationContainer}>
-        <View style={[styles.separationLine, { backgroundColor: colors.hairline }]} />
-        <View style={[styles.sectionNumberContainer, { backgroundColor: colors.background, borderColor: colors.border }]}>
-          <ThemedText style={[styles.sectionNumber, { color: colors.muted }]}>
-            {item.sectionNumber}
-          </ThemedText>
-        </View>
-        <View style={[styles.separationLine, { backgroundColor: colors.hairline }]} />
+  const renderAudioLesson = (lesson: AudioLesson, accentColor: string) => (
+    <Pressable
+      key={lesson.id}
+      style={({ pressed }) => [
+        styles.audioLesson,
+        {
+          backgroundColor: colors.card,
+          borderColor: colors.border,
+          shadowColor: colors.shadow,
+          opacity: pressed ? 0.92 : 1,
+        },
+      ]}
+      onPress={() => router.push(`/lesson/${lesson.id}`)}
+    >
+      <View style={[styles.playIconContainer, { backgroundColor: accentColor }]}>
+        <IconSymbol name="play.fill" size={12} color="#FFFFFF" />
       </View>
-    ) : null;
 
-  const renderLessonItem = ({ item }: { item: Lesson }) => {
-    const isIntro = item.id === 'intro';
-    const tag = tagStyles(item.tag);
-
-    if (isIntro) {
-      return (
-        <View style={styles.groupWrap}>
-          <View style={[styles.shadowWrap, { shadowColor: colors.shadow }]}>
-            <Pressable
-              style={({ pressed }) => [
-                styles.introLessonItem,
-                {
-                  backgroundColor: colors.card,
-                  borderColor: colors.border,
-                  opacity: pressed ? 0.95 : 1,
-                },
-              ]}
-              onPress={() => router.push(`/lesson/${item.id}`)}
-            >
-              <View style={[styles.introMediaFrame, { backgroundColor: colors.surface }]}> 
-                <Image
-                  source={{
-                    uri: `https://picsum.photos/seed/${item.id}-dark/800/500`,
-                  }}
-                  style={styles.introImage}
-                  contentFit="cover"
-                  transition={200}
-                />
-                <View style={styles.introOverlay}>
-                  <View style={[styles.heroPill, { backgroundColor: 'rgba(15,23,42,0.72)' }]}>
-                    <IconSymbol name="sparkles" size={13} color="#FFFFFF" />
-                    <ThemedText style={styles.heroPillText}>Featured Start</ThemedText>
-                  </View>
-                </View>
-              </View>
-
-              <View style={styles.introTextContainer}>
-                <ThemedText type="cardTitle" style={[styles.introTitle, { color: colors.text }]}> 
-                  {item.title}
-                </ThemedText>
-                <ThemedText style={[styles.introDescription, { color: colors.muted }]}> 
-                  {item.description}
-                </ThemedText>
-
-                <View style={styles.metaRow}>
-                  <View style={[styles.tag, { backgroundColor: tag.bg }]}>
-                    <ThemedText style={[styles.tagText, { color: tag.text }]}>{tag.label}</ThemedText>
-                  </View>
-
-                  <View style={[styles.metaPill, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                    <IconSymbol name="clock" size={13} color={colors.muted} />
-                    <ThemedText style={[styles.metaPillText, { color: colors.muted }]}> 
-                      {item.duration}
-                    </ThemedText>
-                  </View>
-
-                  <View style={[styles.metaIconPill, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                    <IconSymbol name="headphones" size={16} color={colors.muted} />
-                  </View>
-                </View>
-              </View>
-            </Pressable>
-          </View>
-          {renderSeparator(item)}
-        </View>
-      );
-    }
-
-    return (
-      <View style={styles.groupWrap}>
-        <View style={[styles.shadowWrap, { shadowColor: colors.shadow }]}>
-          <Pressable
-            style={({ pressed }) => [
-              styles.lessonItem,
+      <View style={styles.audioTextBlock}>
+        <ThemedText style={[styles.audioTitle, { color: colors.text }]} numberOfLines={1}>
+          {lesson.title}
+        </ThemedText>
+        <View style={styles.audioMetaRow}>
+          <View
+            style={[
+              styles.categoryTag,
               {
-                backgroundColor: colors.card,
-                borderColor: colors.border,
-                opacity: pressed ? 0.94 : 1,
+                backgroundColor: lesson.category === 'theory' ? '#DBEAFE' : '#F3E8FF',
               },
             ]}
-            onPress={() => router.push(`/lesson/${item.id}`)}
           >
-            <View style={styles.lessonContent}>
-              <View style={[styles.lessonImageFrame, { backgroundColor: colors.surface }]}> 
-                <Image
-                  source={{
-                    uri: `https://picsum.photos/seed/${item.id}-dark/220/220`,
-                  }}
-                  style={styles.lessonImage}
-                  contentFit="cover"
-                  transition={200}
-                />
-              </View>
+            <ThemedText
+              style={[
+                styles.categoryTagText,
+                {
+                  color: lesson.category === 'theory' ? '#1D4ED8' : '#7E22CE',
+                },
+              ]}
+            >
+              {lesson.category === 'theory' ? 'Theory' : 'Meditation'}
+            </ThemedText>
+          </View>
+          <ThemedText style={[styles.audioDot, { color: colors.mutedLight }]}>•</ThemedText>
+          <ThemedText style={[styles.audioDuration, { color: colors.muted }]}>{lesson.duration}</ThemedText>
+        </View>
+      </View>
 
-              <View style={styles.lessonTextContainer}>
-                <View style={styles.lessonTopRow}>
-                  <View style={[styles.tag, styles.tagCompact, { backgroundColor: tag.bg }]}>
-                    <ThemedText style={[styles.tagText, { color: tag.text }]}>{tag.label}</ThemedText>
-                  </View>
-                  <View style={[styles.durationInline, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                    <IconSymbol name="clock" size={12} color={colors.muted} />
-                    <ThemedText style={[styles.durationInlineText, { color: colors.muted }]}> 
-                      {item.duration}
-                    </ThemedText>
-                  </View>
-                </View>
+      <View style={[styles.audioChevron, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <IconSymbol name="chevron.right" size={15} color={colors.muted} />
+      </View>
+    </Pressable>
+  );
 
-                <ThemedText type="cardTitle" style={[styles.lessonTitle, { color: colors.text }]}> 
-                  {item.title}
-                </ThemedText>
-                <ThemedText
-                  style={[styles.lessonDescription, { color: colors.muted }]}
-                  numberOfLines={2}
-                >
-                  {item.description}
-                </ThemedText>
-
-                <View style={styles.footerRow}>
-                  <ThemedText style={[styles.listenHint, { color: colors.mutedLight }]}>Tap to open lesson</ThemedText>
-                  <View style={[styles.iconCapsule, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                    <IconSymbol name="headphones" size={15} color={colors.muted} />
-                  </View>
-                </View>
+  const renderGroupItem = ({ item }: { item: LessonGroup }) => (
+    <View style={styles.groupContainer}>
+      <View style={[styles.groupCardShadow, { shadowColor: colors.shadow }]}>
+        <View style={[styles.groupCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={styles.groupImageWrap}>
+            <Image source={{ uri: item.imageUrl }} style={styles.groupImage} contentFit="cover" transition={200} />
+            <View style={styles.imageOverlay} />
+            <View style={styles.imageTopMeta}>
+              <View style={[styles.imageBadge, { backgroundColor: 'rgba(15,23,42,0.68)' }]}>
+                <IconSymbol name="headphones" size={12} color="#FFFFFF" />
+                <ThemedText style={styles.imageBadgeText}>2 lessons</ThemedText>
               </View>
             </View>
-          </Pressable>
+            <View style={styles.imageTitleWrap}>
+              <ThemedText type="cardTitle" style={styles.imageTitle}>
+                {item.author}
+              </ThemedText>
+            </View>
+          </View>
+
+          <View style={styles.groupBody}>
+            <View style={styles.descriptionRow}>
+              <View style={[styles.accentDot, { backgroundColor: item.accentColor }]} />
+              <ThemedText style={[styles.groupDescription, { color: colors.muted }]} numberOfLines={2}>
+                {item.description}
+              </ThemedText>
+            </View>
+
+            <View style={styles.lessonsContainer}>
+              {item.lessons.map((lesson) => renderAudioLesson(lesson, item.accentColor))}
+            </View>
+          </View>
         </View>
-        {renderSeparator(item)}
       </View>
-    );
-  };
+    </View>
+  );
 
   return (
     <ThemedView style={styles.container}>
       <FlatList
-        data={dummyLessons}
-        renderItem={({ item }) => renderLessonItem({ item })}
+        data={lessonGroups}
+        renderItem={renderGroupItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={[styles.listContent, { backgroundColor: colors.background }]}
         style={[styles.list, { backgroundColor: colors.background }]}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
           <View style={styles.headerWrap}>
-            <View style={[styles.heroCard, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, shadowColor: colors.shadow }]}>
-              <View style={[styles.heroAccent, { backgroundColor: colors.accent }]} />
-              <View style={styles.header}>
+            <View
+              style={[
+                styles.headerCard,
+                {
+                  backgroundColor: colors.surfaceElevated,
+                  borderColor: colors.border,
+                  shadowColor: colors.shadow,
+                },
+              ]}
+            >
+              <View style={styles.headerTextBlock}>
                 <ThemedText type="title">Lessons</ThemedText>
-                <ThemedText style={[styles.subtitle, { color: colors.muted }]}> 
-                  Structured sessions for confidence, calm, and focus.
-                </ThemedText>
-                <View style={styles.headerStatsRow}>
-                  <View style={[styles.statPill, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                    <ThemedText style={[styles.statValue, { color: colors.text }]}>8</ThemedText>
-                    <ThemedText style={[styles.statLabel, { color: colors.muted }]}>Sessions</ThemedText>
-                  </View>
-                  <View style={[styles.statPill, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                    <ThemedText style={[styles.statValue, { color: colors.text }]}>3</ThemedText>
-                    <ThemedText style={[styles.statLabel, { color: colors.muted }]}>Modules</ThemedText>
-                  </View>
-                  <View style={[styles.statPill, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                    <ThemedText style={[styles.statValue, { color: colors.text }]}>2h+</ThemedText>
-                    <ThemedText style={[styles.statLabel, { color: colors.muted }]}>Audio</ThemedText>
-                  </View>
+                <ThemedText style={[styles.subtitle, { color: colors.muted }]}>Grouped by author with two lesson tiles per card.</ThemedText>
+              </View>
+              <View style={styles.headerPillsRow}>
+                <View style={[styles.headerPill, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                  <ThemedText style={[styles.headerPillText, { color: colors.text }]}>4 authors</ThemedText>
+                </View>
+                <View style={[styles.headerPill, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                  <ThemedText style={[styles.headerPillText, { color: colors.text }]}>8 lessons</ThemedText>
                 </View>
               </View>
             </View>
@@ -315,249 +222,184 @@ const styles = StyleSheet.create({
   },
   headerWrap: {
     paddingTop: 52,
-    paddingBottom: 16,
+    paddingBottom: 14,
   },
-  heroCard: {
-    borderRadius: 24,
+  headerCard: {
     borderWidth: 1,
-    overflow: 'hidden',
+    borderRadius: 22,
+    padding: 16,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.07,
+    shadowRadius: 18,
+    elevation: 5,
+    gap: 12,
+  },
+  headerTextBlock: {
+    gap: 4,
+  },
+  subtitle: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  headerPillsRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  headerPill: {
+    borderRadius: 999,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+  },
+  headerPillText: {
+    fontSize: 12,
+    lineHeight: 14,
+    fontFamily: 'Inter_600SemiBold',
+  },
+  groupContainer: {
+    marginBottom: 20,
+  },
+  groupCardShadow: {
+    borderRadius: 22,
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.08,
     shadowRadius: 18,
     elevation: 5,
   },
-  heroAccent: {
-    height: 6,
-    width: '100%',
-  },
-  header: {
-    padding: 18,
-    gap: 6,
-  },
-  subtitle: {
-    fontSize: 14,
-    lineHeight: 20,
-    marginTop: 2,
-  },
-  headerStatsRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginTop: 12,
-  },
-  statPill: {
-    flex: 1,
-    borderRadius: 14,
-    borderWidth: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-  },
-  statValue: {
-    fontSize: 15,
-    fontFamily: 'Inter_700Bold',
-    lineHeight: 18,
-  },
-  statLabel: {
-    fontSize: 11,
-    lineHeight: 14,
-    marginTop: 3,
-  },
-  groupWrap: {
-    marginBottom: 12,
-  },
-  shadowWrap: {
-    borderRadius: 18,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.07,
-    shadowRadius: 16,
-    elevation: 4,
-  },
-  lessonItem: {
-    borderRadius: 18,
-    borderWidth: 1,
+  groupCard: {
+    borderRadius: 22,
     overflow: 'hidden',
-  },
-  lessonContent: {
-    flexDirection: 'row',
-    alignItems: 'stretch',
-    padding: 10,
-    gap: 12,
-  },
-  lessonImageFrame: {
-    width: 92,
-    borderRadius: 14,
-    overflow: 'hidden',
-    padding: 2,
-  },
-  lessonImage: {
-    width: '100%',
-    aspectRatio: 1,
-    borderRadius: 12,
-  },
-  lessonTextContainer: {
-    flex: 1,
-    paddingVertical: 2,
-  },
-  lessonTopRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 8,
-  },
-  lessonTitle: {
-    fontSize: 17,
-    lineHeight: 22,
-    marginBottom: 3,
-  },
-  lessonDescription: {
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  footerRow: {
-    marginTop: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  listenHint: {
-    fontSize: 11,
-    lineHeight: 14,
-  },
-  iconCapsule: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
     borderWidth: 1,
   },
-  introLessonItem: {
-    borderRadius: 18,
-    borderWidth: 1,
-    overflow: 'hidden',
-  },
-  introMediaFrame: {
-    padding: 2,
+  groupImageWrap: {
     position: 'relative',
   },
-  introImage: {
+  groupImage: {
     width: '100%',
-    height: 208,
-    borderRadius: 16,
+    height: 190,
+    backgroundColor: '#E2E8F0',
   },
-  introOverlay: {
+  imageOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(15,23,42,0.18)',
+  },
+  imageTopMeta: {
     position: 'absolute',
-    top: 14,
-    left: 14,
+    top: 12,
+    left: 12,
+    right: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
-  heroPill: {
+  imageBadge: {
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: 999,
   },
-  heroPillText: {
+  imageBadgeText: {
     color: '#FFFFFF',
     fontSize: 11,
+    lineHeight: 13,
     fontFamily: 'Inter_600SemiBold',
-    lineHeight: 14,
   },
-  introTextContainer: {
-    paddingHorizontal: 14,
-    paddingTop: 10,
-    paddingBottom: 14,
+  imageTitleWrap: {
+    position: 'absolute',
+    left: 14,
+    right: 14,
+    bottom: 14,
   },
-  introTitle: {
-    fontSize: 21,
-    lineHeight: 26,
-    marginBottom: 4,
+  imageTitle: {
+    color: '#FFFFFF',
+    fontSize: 22,
+    lineHeight: 28,
+    textShadowColor: 'rgba(0,0,0,0.25)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 8,
   },
-  introDescription: {
+  groupBody: {
+    padding: 14,
+    gap: 12,
+  },
+  descriptionRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+  },
+  accentDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginTop: 7,
+  },
+  groupDescription: {
+    flex: 1,
     fontSize: 14,
     lineHeight: 20,
-    marginBottom: 12,
   },
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  lessonsContainer: {
     gap: 8,
   },
-  tag: {
-    paddingHorizontal: 8,
-    paddingVertical: 5,
-    borderRadius: 999,
-    alignSelf: 'flex-start',
-  },
-  tagCompact: {
-    paddingVertical: 4,
-  },
-  tagText: {
-    fontSize: 10,
-    lineHeight: 12,
-    fontFamily: 'Inter_700Bold',
-    letterSpacing: 0.4,
-    textTransform: 'uppercase',
-  },
-  metaPill: {
+  audioLesson: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
     borderWidth: 1,
-    borderRadius: 999,
-    paddingHorizontal: 8,
-    paddingVertical: 5,
+    borderRadius: 14,
+    padding: 10,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
+    elevation: 2,
   },
-  metaPillText: {
-    fontSize: 11,
-    lineHeight: 14,
-  },
-  metaIconPill: {
+  playIconContainer: {
     width: 30,
     height: 30,
     borderRadius: 15,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
+    marginRight: 10,
   },
-  durationInline: {
-    marginLeft: 'auto',
+  audioTextBlock: {
+    flex: 1,
+  },
+  audioTitle: {
+    fontSize: 14,
+    lineHeight: 18,
+    fontFamily: 'Inter_600SemiBold',
+  },
+  audioMetaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    borderRadius: 999,
-    borderWidth: 1,
-    paddingHorizontal: 7,
-    paddingVertical: 4,
+    marginTop: 3,
   },
-  durationInlineText: {
+  categoryTag: {
+    borderRadius: 999,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+  },
+  categoryTagText: {
     fontSize: 10,
     lineHeight: 12,
+    fontFamily: 'Inter_600SemiBold',
   },
-  separationContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 14,
-    marginBottom: 2,
-    marginHorizontal: 12,
-    gap: 10,
+  audioDot: {
+    marginHorizontal: 5,
+    fontSize: 10,
+    lineHeight: 14,
   },
-  separationLine: {
-    flex: 1,
-    height: 1,
+  audioDuration: {
+    fontSize: 11,
+    lineHeight: 14,
   },
-  sectionNumberContainer: {
-    minWidth: 34,
-    height: 26,
-    borderRadius: 13,
+  audioChevron: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 8,
-  },
-  sectionNumber: {
-    fontSize: 12,
-    fontFamily: 'Inter_600SemiBold',
-    lineHeight: 14,
+    marginLeft: 8,
   },
 });
