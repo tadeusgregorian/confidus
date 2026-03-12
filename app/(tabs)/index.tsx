@@ -19,9 +19,12 @@ type PathLesson = {
 type Step = {
   lesson: PathLesson;
   side: 'left' | 'right';
-  y: number;
   cardX: number;
-  joinX: number;
+  cardTop: number;
+  entryX: number;
+  entryY: number;
+  exitX: number;
+  exitY: number;
 };
 
 const lessons: PathLesson[] = [
@@ -105,6 +108,7 @@ const sidePattern: Array<'left' | 'right'> = [
 const ROW_HEIGHT = 124;
 const CARD_HEIGHT = 100;
 const TURN_RADIUS = 18;
+const DOCK_INSET = 2;
 
 export default function LessonsScreen() {
   const router = useRouter();
@@ -140,20 +144,22 @@ export default function LessonsScreen() {
   const cardWidth = Math.min(Math.floor(contentWidth * 0.82), 420);
   const leftCardX = 0;
   const rightCardX = contentWidth - cardWidth;
-  const joinOffset = 12;
 
   const steps: Step[] = lessons.map((lesson, index) => {
     const side = sidePattern[index] ?? 'right';
     const cardX = side === 'left' ? leftCardX : rightCardX;
-    const joinX = side === 'left' ? cardX + cardWidth + joinOffset : cardX - joinOffset;
-    const y = index * ROW_HEIGHT + ROW_HEIGHT / 2;
+    const cardTop = index * ROW_HEIGHT + (ROW_HEIGHT - CARD_HEIGHT) / 2;
+    const dockX = side === 'left' ? cardX + DOCK_INSET : cardX + cardWidth - DOCK_INSET;
 
     return {
       lesson,
       side,
-      y,
       cardX,
-      joinX,
+      cardTop,
+      entryX: dockX,
+      entryY: cardTop + DOCK_INSET,
+      exitX: dockX,
+      exitY: cardTop + CARD_HEIGHT - DOCK_INSET,
     };
   });
 
@@ -176,16 +182,15 @@ export default function LessonsScreen() {
         <View style={[styles.pathCanvas, { height: pathHeight }]}> 
           {steps.slice(0, -1).map((current, index) => {
             const next = steps[index + 1];
-            const x1 = current.joinX;
-            const y1 = current.y;
-            const x2 = next.joinX;
-            const y2 = next.y;
+            const x1 = current.exitX;
+            const y1 = current.exitY;
+            const x2 = next.entryX;
+            const y2 = next.entryY;
             const dx = x2 - x1;
-            const midY = (y1 + y2) / 2;
-            const dir = dx > 0 ? 'right' : 'left';
-            const r = Math.min(TURN_RADIUS, Math.abs(dx) / 2 - 4, Math.abs(y2 - y1) / 2 - 4);
+            const movingRight = dx > 0;
+            const straightDrop = Math.abs(dx) < 2;
 
-            if (Math.abs(dx) < 2 || r < 4) {
+            if (straightDrop) {
               return (
                 <View
                   key={`segment-${index}`}
@@ -194,7 +199,31 @@ export default function LessonsScreen() {
                     {
                       left: x1,
                       top: y1,
-                      height: y2 - y1,
+                      height: Math.max(0, y2 - y1),
+                      borderColor: palette.path,
+                    },
+                  ]}
+                />
+              );
+            }
+
+            const midY = y1 + (y2 - y1) * 0.52;
+            const r = Math.min(
+              TURN_RADIUS,
+              Math.abs(dx) / 2 - 4,
+              Math.abs(midY - y1) - 4,
+              Math.abs(y2 - midY) - 4
+            );
+            if (r < 4) {
+              return (
+                <View
+                  key={`segment-${index}`}
+                  style={[
+                    styles.pathSegmentVertical,
+                    {
+                      left: x1,
+                      top: y1,
+                      height: Math.max(0, y2 - y1),
                       borderColor: palette.path,
                     },
                   ]}
@@ -213,13 +242,13 @@ export default function LessonsScreen() {
                     {
                       left: x1,
                       top: y1,
-                      height: midY - y1 - r,
+                      height: Math.max(0, midY - y1 - r),
                       borderColor: palette.path,
                     },
                   ]}
                 />
 
-                {dir === 'right' ? (
+                {movingRight ? (
                   <View
                     style={[
                       styles.cornerDownRight,
@@ -261,7 +290,7 @@ export default function LessonsScreen() {
                   ]}
                 />
 
-                {dir === 'right' ? (
+                {movingRight ? (
                   <View
                     style={[
                       styles.cornerRightDown,
@@ -297,7 +326,7 @@ export default function LessonsScreen() {
                     {
                       left: x2,
                       top: midY + r,
-                      height: y2 - (midY + r),
+                      height: Math.max(0, y2 - (midY + r)),
                       borderColor: palette.path,
                     },
                   ]}
