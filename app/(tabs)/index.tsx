@@ -1,209 +1,358 @@
-import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
-type AudioLesson = {
+type PathLesson = {
   id: string;
   title: string;
-  category: 'theory' | 'meditation';
-  duration: string;
-};
-
-type LessonGroup = {
-  id: string;
   author: string;
-  description: string;
-  imageUrl: string;
+  category: 'Theory' | 'Meditation';
+  duration: string;
   accentColor: string;
-  lessons: [AudioLesson, AudioLesson];
 };
 
-const lessonGroups: LessonGroup[] = [
+type Step = {
+  lesson: PathLesson;
+  side: 'left' | 'right';
+  y: number;
+  cardX: number;
+  joinX: number;
+};
+
+const lessons: PathLesson[] = [
   {
-    id: 'butler',
+    id: '1',
+    title: 'Confidence Comes After Action',
     author: 'Gillian Butler',
-    description: 'Confidence Comes After Action',
-    imageUrl: 'https://picsum.photos/seed/lesson-butler/900/600',
-    accentColor: '#4F46E5',
-    lessons: [
-      { id: '1', title: 'Confidence Comes After Action', category: 'theory', duration: '15:30' },
-      { id: '2', title: 'Confidence Comes After Action', category: 'meditation', duration: '12:45' },
-    ],
+    category: 'Theory',
+    duration: '15:30',
+    accentColor: '#5B8CFF',
   },
   {
-    id: 'cain',
+    id: '2',
+    title: 'Confidence Comes After Action',
+    author: 'Gillian Butler',
+    category: 'Meditation',
+    duration: '12:45',
+    accentColor: '#5B8CFF',
+  },
+  {
+    id: '3',
+    title: 'Introversion Is Not Shyness',
     author: 'Susan Cain',
-    description: 'Introversion Is Not Shyness',
-    imageUrl: 'https://picsum.photos/seed/lesson-cain/900/600',
-    accentColor: '#DB2777',
-    lessons: [
-      { id: '3', title: 'Introversion Is Not Shyness', category: 'theory', duration: '18:20' },
-      { id: '4', title: 'Introversion Is Not Shyness', category: 'meditation', duration: '22:10' },
-    ],
+    category: 'Theory',
+    duration: '18:20',
+    accentColor: '#F973B8',
   },
   {
-    id: 'jeffers',
+    id: '4',
+    title: 'Introversion Is Not Shyness',
+    author: 'Susan Cain',
+    category: 'Meditation',
+    duration: '22:10',
+    accentColor: '#F973B8',
+  },
+  {
+    id: '5',
+    title: 'Confident People Act Despite Fear',
     author: 'Susan Jeffers',
-    description: 'Confident People Act Despite Fear',
-    imageUrl: 'https://picsum.photos/seed/lesson-jeffers/900/600',
-    accentColor: '#7C3AED',
-    lessons: [
-      { id: '5', title: 'Confident People Act Despite Fear', category: 'theory', duration: '16:55' },
-      { id: '6', title: 'Confident People Act Despite Fear', category: 'meditation', duration: '14:30' },
-    ],
+    category: 'Theory',
+    duration: '16:55',
+    accentColor: '#A78BFA',
   },
   {
-    id: 'kabat-zinn',
+    id: '6',
+    title: 'Confident People Act Despite Fear',
+    author: 'Susan Jeffers',
+    category: 'Meditation',
+    duration: '14:30',
+    accentColor: '#A78BFA',
+  },
+  {
+    id: '7',
+    title: 'Full Catastrophe Living',
     author: 'Jon Kabat-Zinn',
-    description: 'Full Catastrophe Living',
-    imageUrl: 'https://picsum.photos/seed/lesson-kabat-zinn/900/600',
-    accentColor: '#D97706',
-    lessons: [
-      { id: '7', title: 'Full Catastrophe Living', category: 'theory', duration: '16:55' },
-      { id: '8', title: 'Full Catastrophe Living', category: 'meditation', duration: '14:30' },
-    ],
+    category: 'Theory',
+    duration: '16:55',
+    accentColor: '#F59E0B',
+  },
+  {
+    id: '8',
+    title: 'Full Catastrophe Living',
+    author: 'Jon Kabat-Zinn',
+    category: 'Meditation',
+    duration: '14:30',
+    accentColor: '#F59E0B',
   },
 ];
+
+const sidePattern: Array<'left' | 'right'> = [
+  'left',
+  'right',
+  'right',
+  'left',
+  'left',
+  'right',
+  'right',
+  'left',
+];
+
+const ROW_HEIGHT = 124;
+const CARD_HEIGHT = 100;
+const TURN_RADIUS = 18;
 
 export default function LessonsScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const { width } = useWindowDimensions();
+  const isDark = (colorScheme ?? 'light') === 'dark';
 
-  const renderAudioLesson = (lesson: AudioLesson, accentColor: string) => (
-    <Pressable
-      key={lesson.id}
-      style={({ pressed }) => [
-        styles.audioLesson,
-        {
-          backgroundColor: colors.card,
-          borderColor: colors.border,
-          shadowColor: colors.shadow,
-          opacity: pressed ? 0.92 : 1,
-        },
-      ]}
-      onPress={() => router.push(`/lesson/${lesson.id}`)}
-    >
-      <View style={[styles.playIconContainer, { backgroundColor: accentColor }]}>
-        <IconSymbol name="play.fill" size={12} color="#FFFFFF" />
-      </View>
+  const palette = isDark
+    ? {
+        appBg: '#070D1A',
+        panelBg: '#0B1328',
+        panelBorder: '#1F2A44',
+        title: '#F8FAFF',
+        text: '#D3DBEC',
+        subtle: '#8EA1C6',
+        cardBg: '#101A31',
+        cardBorder: '#243452',
+        path: '#6CA0FF',
+      }
+    : {
+        appBg: '#EEF4FF',
+        panelBg: '#F8FBFF',
+        panelBorder: '#D4E3FF',
+        title: '#12203D',
+        text: '#385073',
+        subtle: '#5B7298',
+        cardBg: '#FFFFFF',
+        cardBorder: '#D7E3F8',
+        path: '#5B8CFF',
+      };
 
-      <View style={styles.audioTextBlock}>
-        <ThemedText style={[styles.audioTitle, { color: colors.text }]} numberOfLines={1}>
-          {lesson.title}
-        </ThemedText>
-        <View style={styles.audioMetaRow}>
-          <View
-            style={[
-              styles.categoryTag,
-              {
-                backgroundColor: lesson.category === 'theory' ? '#DBEAFE' : '#F3E8FF',
-              },
-            ]}
-          >
-            <ThemedText
-              style={[
-                styles.categoryTagText,
-                {
-                  color: lesson.category === 'theory' ? '#1D4ED8' : '#7E22CE',
-                },
-              ]}
-            >
-              {lesson.category === 'theory' ? 'Theory' : 'Meditation'}
-            </ThemedText>
-          </View>
-          <ThemedText style={[styles.audioDot, { color: colors.mutedLight }]}>•</ThemedText>
-          <ThemedText style={[styles.audioDuration, { color: colors.muted }]}>{lesson.duration}</ThemedText>
-        </View>
-      </View>
+  const contentWidth = width - 32;
+  const cardWidth = Math.min(Math.floor(contentWidth * 0.82), 420);
+  const leftCardX = 0;
+  const rightCardX = contentWidth - cardWidth;
+  const joinOffset = 12;
 
-      <View style={[styles.audioChevron, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-        <IconSymbol name="chevron.right" size={15} color={colors.muted} />
-      </View>
-    </Pressable>
-  );
+  const steps: Step[] = lessons.map((lesson, index) => {
+    const side = sidePattern[index] ?? 'right';
+    const cardX = side === 'left' ? leftCardX : rightCardX;
+    const joinX = side === 'left' ? cardX + cardWidth + joinOffset : cardX - joinOffset;
+    const y = index * ROW_HEIGHT + ROW_HEIGHT / 2;
 
-  const renderGroupItem = ({ item }: { item: LessonGroup }) => (
-    <View style={styles.groupContainer}>
-      <View style={[styles.groupCardShadow, { shadowColor: colors.shadow }]}>
-        <View style={[styles.groupCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <View style={styles.groupImageWrap}>
-            <Image source={{ uri: item.imageUrl }} style={styles.groupImage} contentFit="cover" transition={200} />
-            <View style={styles.imageOverlay} />
-            <View style={styles.imageTopMeta}>
-              <View style={[styles.imageBadge, { backgroundColor: 'rgba(15,23,42,0.68)' }]}>
-                <IconSymbol name="headphones" size={12} color="#FFFFFF" />
-                <ThemedText style={styles.imageBadgeText}>2 lessons</ThemedText>
-              </View>
-            </View>
-            <View style={styles.imageTitleWrap}>
-              <ThemedText type="cardTitle" style={styles.imageTitle}>
-                {item.author}
-              </ThemedText>
-            </View>
-          </View>
+    return {
+      lesson,
+      side,
+      y,
+      cardX,
+      joinX,
+    };
+  });
 
-          <View style={styles.groupBody}>
-            <View style={styles.descriptionRow}>
-              <View style={[styles.accentDot, { backgroundColor: item.accentColor }]} />
-              <ThemedText style={[styles.groupDescription, { color: colors.muted }]} numberOfLines={2}>
-                {item.description}
-              </ThemedText>
-            </View>
-
-            <View style={styles.lessonsContainer}>
-              {item.lessons.map((lesson) => renderAudioLesson(lesson, item.accentColor))}
-            </View>
-          </View>
-        </View>
-      </View>
-    </View>
-  );
+  const pathHeight = lessons.length * ROW_HEIGHT;
 
   return (
-    <ThemedView style={styles.container}>
-      <FlatList
-        data={lessonGroups}
-        renderItem={renderGroupItem}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={[styles.listContent, { backgroundColor: colors.background }]}
-        style={[styles.list, { backgroundColor: colors.background }]}
+    <ThemedView style={[styles.container, { backgroundColor: palette.appBg }]}> 
+      <ScrollView
+        contentContainerStyle={[styles.listContent, { backgroundColor: palette.appBg }]}
         showsVerticalScrollIndicator={false}
-        ListHeaderComponent={
-          <View style={styles.headerWrap}>
-            <View
-              style={[
-                styles.headerCard,
-                {
-                  backgroundColor: colors.surfaceElevated,
-                  borderColor: colors.border,
-                  shadowColor: colors.shadow,
-                },
-              ]}
-            >
-              <View style={styles.headerTextBlock}>
-                <ThemedText type="title">Lessons</ThemedText>
-                <ThemedText style={[styles.subtitle, { color: colors.muted }]}>Grouped by author with two lesson tiles per card.</ThemedText>
+      >
+        <View style={[styles.headerCard, { backgroundColor: palette.panelBg, borderColor: palette.panelBorder }]}> 
+          <ThemedText style={[styles.pathLabel, { color: palette.subtle }]}>Adaptive Learning Path</ThemedText>
+          <ThemedText type="title" style={{ color: palette.title }}>
+            Lessons
+          </ThemedText>
+          <ThemedText style={[styles.subtitle, { color: palette.text }]}>A curved dotted route connects every lesson as one continuous journey.</ThemedText>
+        </View>
+
+        <View style={[styles.pathCanvas, { height: pathHeight }]}> 
+          {steps.slice(0, -1).map((current, index) => {
+            const next = steps[index + 1];
+            const x1 = current.joinX;
+            const y1 = current.y;
+            const x2 = next.joinX;
+            const y2 = next.y;
+            const dx = x2 - x1;
+            const midY = (y1 + y2) / 2;
+            const dir = dx > 0 ? 'right' : 'left';
+            const r = Math.min(TURN_RADIUS, Math.abs(dx) / 2 - 4, Math.abs(y2 - y1) / 2 - 4);
+
+            if (Math.abs(dx) < 2 || r < 4) {
+              return (
+                <View
+                  key={`segment-${index}`}
+                  style={[
+                    styles.pathSegmentVertical,
+                    {
+                      left: x1,
+                      top: y1,
+                      height: y2 - y1,
+                      borderColor: palette.path,
+                    },
+                  ]}
+                />
+              );
+            }
+
+            const horizontalLeft = Math.min(x1, x2) + r;
+            const horizontalWidth = Math.abs(x2 - x1) - r * 2;
+
+            return (
+              <View key={`segment-${index}`}>
+                <View
+                  style={[
+                    styles.pathSegmentVertical,
+                    {
+                      left: x1,
+                      top: y1,
+                      height: midY - y1 - r,
+                      borderColor: palette.path,
+                    },
+                  ]}
+                />
+
+                {dir === 'right' ? (
+                  <View
+                    style={[
+                      styles.cornerDownRight,
+                      {
+                        left: x1,
+                        top: midY - r,
+                        width: r,
+                        height: r,
+                        borderColor: palette.path,
+                        borderBottomLeftRadius: r,
+                      },
+                    ]}
+                  />
+                ) : (
+                  <View
+                    style={[
+                      styles.cornerDownLeft,
+                      {
+                        left: x1 - r,
+                        top: midY - r,
+                        width: r,
+                        height: r,
+                        borderColor: palette.path,
+                        borderBottomRightRadius: r,
+                      },
+                    ]}
+                  />
+                )}
+
+                <View
+                  style={[
+                    styles.pathSegmentHorizontal,
+                    {
+                      top: midY,
+                      left: horizontalLeft,
+                      width: horizontalWidth,
+                      borderColor: palette.path,
+                    },
+                  ]}
+                />
+
+                {dir === 'right' ? (
+                  <View
+                    style={[
+                      styles.cornerRightDown,
+                      {
+                        left: x2 - r,
+                        top: midY,
+                        width: r,
+                        height: r,
+                        borderColor: palette.path,
+                        borderTopRightRadius: r,
+                      },
+                    ]}
+                  />
+                ) : (
+                  <View
+                    style={[
+                      styles.cornerLeftDown,
+                      {
+                        left: x2,
+                        top: midY,
+                        width: r,
+                        height: r,
+                        borderColor: palette.path,
+                        borderTopLeftRadius: r,
+                      },
+                    ]}
+                  />
+                )}
+
+                <View
+                  style={[
+                    styles.pathSegmentVertical,
+                    {
+                      left: x2,
+                      top: midY + r,
+                      height: y2 - (midY + r),
+                      borderColor: palette.path,
+                    },
+                  ]}
+                />
               </View>
-              <View style={styles.headerPillsRow}>
-                <View style={[styles.headerPill, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                  <ThemedText style={[styles.headerPillText, { color: colors.text }]}>4 authors</ThemedText>
-                </View>
-                <View style={[styles.headerPill, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                  <ThemedText style={[styles.headerPillText, { color: colors.text }]}>8 lessons</ThemedText>
-                </View>
+            );
+          })}
+
+          {steps.map((step, index) => {
+            const { lesson, side } = step;
+
+            return (
+              <View key={lesson.id} style={[styles.stepRow, { top: index * ROW_HEIGHT, height: ROW_HEIGHT }]}> 
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.lessonCard,
+                    {
+                      width: cardWidth,
+                      height: CARD_HEIGHT,
+                      backgroundColor: palette.cardBg,
+                      borderColor: palette.cardBorder,
+                      opacity: pressed ? 0.9 : 1,
+                    },
+                    side === 'left' ? styles.lessonLeft : styles.lessonRight,
+                  ]}
+                  onPress={() => router.push(`/lesson/${lesson.id}`)}
+                >
+                  <View style={[styles.lessonTopRow, side === 'right' && styles.lessonTopRowRight]}>
+                    <View style={[styles.playIcon, { backgroundColor: lesson.accentColor }]}> 
+                      <IconSymbol name="play.fill" size={11} color="#FFFFFF" />
+                    </View>
+                    <ThemedText style={[styles.lessonAuthor, { color: lesson.accentColor }, side === 'right' && styles.rightAlignedText]}>
+                      {lesson.author}
+                    </ThemedText>
+                  </View>
+
+                  <ThemedText
+                    style={[styles.lessonTitle, { color: palette.title }, side === 'right' && styles.rightAlignedText]}
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                  >
+                    {lesson.title}
+                  </ThemedText>
+
+                  <View style={[styles.lessonMetaRow, side === 'right' && styles.lessonMetaRowRight]}>
+                    <ThemedText style={[styles.lessonMeta, { color: palette.text }]}>{lesson.category}</ThemedText>
+                    <ThemedText style={[styles.lessonMetaDot, { color: palette.text }]}>•</ThemedText>
+                    <ThemedText style={[styles.lessonMeta, { color: palette.text }]}>{lesson.duration}</ThemedText>
+                  </View>
+                </Pressable>
               </View>
-            </View>
-          </View>
-        }
-      />
+            );
+          })}
+        </View>
+      </ScrollView>
     </ThemedView>
   );
 }
@@ -212,194 +361,137 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  list: {
-    flex: 1,
-  },
   listContent: {
     paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 24,
-  },
-  headerWrap: {
-    paddingTop: 52,
-    paddingBottom: 14,
+    paddingTop: 54,
+    paddingBottom: 32,
   },
   headerCard: {
     borderWidth: 1,
-    borderRadius: 22,
+    borderRadius: 20,
     padding: 16,
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.07,
-    shadowRadius: 18,
-    elevation: 5,
-    gap: 12,
+    marginBottom: 18,
   },
-  headerTextBlock: {
-    gap: 4,
-  },
-  subtitle: {
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  headerPillsRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  headerPill: {
-    borderRadius: 999,
-    borderWidth: 1,
-    paddingHorizontal: 10,
-    paddingVertical: 7,
-  },
-  headerPillText: {
+  pathLabel: {
     fontSize: 12,
     lineHeight: 14,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 6,
     fontFamily: 'Inter_600SemiBold',
   },
-  groupContainer: {
-    marginBottom: 20,
-  },
-  groupCardShadow: {
-    borderRadius: 22,
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.08,
-    shadowRadius: 18,
-    elevation: 5,
-  },
-  groupCard: {
-    borderRadius: 22,
-    overflow: 'hidden',
-    borderWidth: 1,
-  },
-  groupImageWrap: {
-    position: 'relative',
-  },
-  groupImage: {
-    width: '100%',
-    height: 190,
-    backgroundColor: '#E2E8F0',
-  },
-  imageOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(15,23,42,0.18)',
-  },
-  imageTopMeta: {
-    position: 'absolute',
-    top: 12,
-    left: 12,
-    right: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  imageBadge: {
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  imageBadgeText: {
-    color: '#FFFFFF',
-    fontSize: 11,
-    lineHeight: 13,
-    fontFamily: 'Inter_600SemiBold',
-  },
-  imageTitleWrap: {
-    position: 'absolute',
-    left: 14,
-    right: 14,
-    bottom: 14,
-  },
-  imageTitle: {
-    color: '#FFFFFF',
-    fontSize: 22,
-    lineHeight: 28,
-    textShadowColor: 'rgba(0,0,0,0.25)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 8,
-  },
-  groupBody: {
-    padding: 14,
-    gap: 12,
-  },
-  descriptionRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 10,
-  },
-  accentDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginTop: 7,
-  },
-  groupDescription: {
-    flex: 1,
+  subtitle: {
+    marginTop: 6,
     fontSize: 14,
     lineHeight: 20,
   },
-  lessonsContainer: {
-    gap: 8,
+  pathCanvas: {
+    position: 'relative',
   },
-  audioLesson: {
+  pathSegmentVertical: {
+    position: 'absolute',
+    borderLeftWidth: 3,
+    borderStyle: 'dotted',
+  },
+  pathSegmentHorizontal: {
+    position: 'absolute',
+    borderTopWidth: 3,
+    borderStyle: 'dotted',
+  },
+  cornerDownRight: {
+    position: 'absolute',
+    borderLeftWidth: 3,
+    borderBottomWidth: 3,
+    borderStyle: 'dotted',
+  },
+  cornerDownLeft: {
+    position: 'absolute',
+    borderRightWidth: 3,
+    borderBottomWidth: 3,
+    borderStyle: 'dotted',
+  },
+  cornerRightDown: {
+    position: 'absolute',
+    borderTopWidth: 3,
+    borderRightWidth: 3,
+    borderStyle: 'dotted',
+  },
+  cornerLeftDown: {
+    position: 'absolute',
+    borderTopWidth: 3,
+    borderLeftWidth: 3,
+    borderStyle: 'dotted',
+  },
+  stepRow: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    justifyContent: 'center',
+  },
+  lessonCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    justifyContent: 'space-between',
+    shadowColor: '#0B1222',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.1,
+    shadowRadius: 16,
+    elevation: 5,
+  },
+  lessonLeft: {
+    marginRight: 'auto',
+  },
+  lessonRight: {
+    marginLeft: 'auto',
+    alignSelf: 'flex-end',
+  },
+  lessonTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderRadius: 14,
-    padding: 10,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.04,
-    shadowRadius: 10,
-    elevation: 2,
+    gap: 8,
   },
-  playIconContainer: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+  lessonTopRowRight: {
+    flexDirection: 'row-reverse',
+  },
+  playIcon: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 10,
   },
-  audioTextBlock: {
-    flex: 1,
+  lessonAuthor: {
+    fontSize: 11,
+    lineHeight: 13,
+    fontFamily: 'Inter_700Bold',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
   },
-  audioTitle: {
+  lessonTitle: {
+    marginTop: 8,
     fontSize: 14,
     lineHeight: 18,
     fontFamily: 'Inter_600SemiBold',
   },
-  audioMetaRow: {
+  rightAlignedText: {
+    textAlign: 'right',
+  },
+  lessonMetaRow: {
+    marginTop: 6,
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 3,
   },
-  categoryTag: {
-    borderRadius: 999,
-    paddingHorizontal: 7,
-    paddingVertical: 3,
+  lessonMetaRowRight: {
+    justifyContent: 'flex-end',
   },
-  categoryTagText: {
-    fontSize: 10,
-    lineHeight: 12,
-    fontFamily: 'Inter_600SemiBold',
-  },
-  audioDot: {
-    marginHorizontal: 5,
-    fontSize: 10,
-    lineHeight: 14,
-  },
-  audioDuration: {
+  lessonMeta: {
     fontSize: 11,
-    lineHeight: 14,
+    lineHeight: 13,
   },
-  audioChevron: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginLeft: 8,
+  lessonMetaDot: {
+    marginHorizontal: 6,
+    fontSize: 10,
   },
 });

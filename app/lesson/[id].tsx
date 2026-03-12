@@ -1,13 +1,11 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { Image } from 'expo-image';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 type GroupedLesson = {
@@ -20,8 +18,8 @@ type GroupedLesson = {
 type LessonGroup = {
   author: string;
   description: string;
-  imageUrl: string;
   accentColor: string;
+  noteColor: string;
   lessons: [GroupedLesson, GroupedLesson];
 };
 
@@ -29,8 +27,8 @@ const lessonGroups: LessonGroup[] = [
   {
     author: 'Gillian Butler',
     description: 'Confidence Comes After Action',
-    imageUrl: 'https://picsum.photos/seed/lesson-butler/1200/900',
-    accentColor: '#4F46E5',
+    accentColor: '#6D7AB4',
+    noteColor: '#FDF8EE',
     lessons: [
       { id: '1', title: 'Confidence Comes After Action', duration: '15:30', category: 'Theory' },
       { id: '2', title: 'Confidence Comes After Action', duration: '12:45', category: 'Meditation' },
@@ -39,8 +37,8 @@ const lessonGroups: LessonGroup[] = [
   {
     author: 'Susan Cain',
     description: 'Introversion Is Not Shyness',
-    imageUrl: 'https://picsum.photos/seed/lesson-cain/1200/900',
-    accentColor: '#DB2777',
+    accentColor: '#B17390',
+    noteColor: '#FEF7F0',
     lessons: [
       { id: '3', title: 'Introversion Is Not Shyness', duration: '18:20', category: 'Theory' },
       { id: '4', title: 'Introversion Is Not Shyness', duration: '22:10', category: 'Meditation' },
@@ -49,8 +47,8 @@ const lessonGroups: LessonGroup[] = [
   {
     author: 'Susan Jeffers',
     description: 'Confident People Act Despite Fear',
-    imageUrl: 'https://picsum.photos/seed/lesson-jeffers/1200/900',
-    accentColor: '#7C3AED',
+    accentColor: '#8A6CAC',
+    noteColor: '#FCF8F1',
     lessons: [
       { id: '5', title: 'Confident People Act Despite Fear', duration: '16:55', category: 'Theory' },
       { id: '6', title: 'Confident People Act Despite Fear', duration: '14:30', category: 'Meditation' },
@@ -59,8 +57,8 @@ const lessonGroups: LessonGroup[] = [
   {
     author: 'Jon Kabat-Zinn',
     description: 'Full Catastrophe Living',
-    imageUrl: 'https://picsum.photos/seed/lesson-kabat-zinn/1200/900',
-    accentColor: '#D97706',
+    accentColor: '#A77A56',
+    noteColor: '#FEF9F2',
     lessons: [
       { id: '7', title: 'Full Catastrophe Living', duration: '16:55', category: 'Theory' },
       { id: '8', title: 'Full Catastrophe Living', duration: '14:30', category: 'Meditation' },
@@ -76,8 +74,8 @@ const getLessonData = (id: string) => {
         ...match,
         author: group.author,
         description: group.description,
-        imageUrl: group.imageUrl,
         accentColor: group.accentColor,
+        noteColor: group.noteColor,
       };
     }
   }
@@ -88,8 +86,8 @@ const getLessonData = (id: string) => {
     ...fallbackLesson,
     author: fallbackGroup.author,
     description: fallbackGroup.description,
-    imageUrl: fallbackGroup.imageUrl,
     accentColor: fallbackGroup.accentColor,
+    noteColor: fallbackGroup.noteColor,
   };
 };
 
@@ -97,7 +95,25 @@ export default function LessonPlayerScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const isDark = (colorScheme ?? 'light') === 'dark';
+
+  const palette = isDark
+    ? {
+        appBg: '#1A1720',
+        cardBg: '#2A2433',
+        cardBorder: '#3A334A',
+        ink: '#F5F0E8',
+        mutedInk: '#C9C2B6',
+        rail: '#4B415E',
+      }
+    : {
+        appBg: '#F6F0E8',
+        cardBg: '#FFFDF9',
+        cardBorder: '#E8DECF',
+        ink: '#40362E',
+        mutedInk: '#8A7A6A',
+        rail: '#E6DCCF',
+      };
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -171,8 +187,8 @@ export default function LessonPlayerScreen() {
   const progress = duration > 0 ? (position / duration) * 100 : 0;
 
   return (
-    <ThemedView style={[styles.container, { backgroundColor: colors.background }]}>
-      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+    <ThemedView style={[styles.container, { backgroundColor: palette.appBg }]}> 
+      <StatusBar style={isDark ? 'light' : 'dark'} />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={[styles.headerRow, { paddingTop: Platform.OS === 'ios' ? 56 : 28 }]}> 
@@ -181,95 +197,80 @@ export default function LessonPlayerScreen() {
             style={({ pressed }) => [
               styles.backButton,
               {
-                backgroundColor: colors.surface,
-                borderColor: colors.border,
+                backgroundColor: palette.cardBg,
+                borderColor: palette.cardBorder,
                 opacity: pressed ? 0.8 : 1,
               },
             ]}
           >
-            <MaterialIcons name="arrow-back" size={20} color={colors.text} />
+            <MaterialIcons name="arrow-back" size={20} color={palette.ink} />
           </Pressable>
-          <ThemedText style={[styles.headerLabel, { color: colors.muted }]}>Now Playing</ThemedText>
+          <ThemedText style={[styles.headerLabel, { color: palette.mutedInk }]}>Journal Entry</ThemedText>
           <View style={styles.headerSpacer} />
         </View>
 
-        <View style={[styles.playerCardShadow, { shadowColor: colors.shadow }]}> 
-          <View style={[styles.playerCard, { backgroundColor: colors.card, borderColor: colors.border }]}> 
-            <View style={styles.heroImageWrap}>
-              <Image source={{ uri: lesson.imageUrl }} style={styles.heroImage} contentFit="cover" transition={200} />
-              <View style={styles.imageOverlay} />
-              <View style={styles.imageMetaRow}>
-                <View style={[styles.imageBadge, { backgroundColor: 'rgba(15,23,42,0.68)' }]}> 
-                  <MaterialIcons name="headset" size={12} color="#FFFFFF" />
-                  <ThemedText style={styles.imageBadgeText}>{lesson.duration}</ThemedText>
-                </View>
-                <View style={[styles.imageBadge, { backgroundColor: 'rgba(15,23,42,0.68)' }]}> 
-                  <ThemedText style={styles.imageBadgeText}>{lesson.category}</ThemedText>
-                </View>
-              </View>
-              <View style={styles.imageTitleWrap}>
-                <ThemedText type="cardTitle" style={styles.imageTitle}>
-                  {lesson.author}
-                </ThemedText>
-              </View>
+        <View style={[styles.paperCard, { backgroundColor: lesson.noteColor, borderColor: palette.cardBorder }]}> 
+          <View style={[styles.tape, { backgroundColor: '#F4E1C7', borderColor: palette.cardBorder }]} />
+
+          <View style={styles.titleRow}>
+            <View style={[styles.dot, { backgroundColor: lesson.accentColor }]} />
+            <ThemedText style={[styles.authorText, { color: palette.ink }]}>{lesson.author}</ThemedText>
+          </View>
+
+          <ThemedText style={[styles.lessonHeadline, { color: palette.ink }]}>{lesson.title}</ThemedText>
+          <ThemedText style={[styles.lessonDescription, { color: palette.mutedInk }]}>{lesson.description}</ThemedText>
+
+          <View style={styles.metaRow}>
+            <View style={[styles.metaChip, { backgroundColor: '#EAE0F7' }]}>
+              <ThemedText style={[styles.metaChipText, { color: lesson.accentColor }]}>{lesson.category}</ThemedText>
             </View>
-
-            <View style={styles.playerBody}>
-              <ThemedText style={[styles.lessonHeadline, { color: colors.text }]}>{lesson.title}</ThemedText>
-              <ThemedText style={[styles.lessonDescription, { color: colors.muted }]}> 
-                {lesson.description}
-              </ThemedText>
-
-              <View style={[styles.progressCard, { backgroundColor: colors.surface, borderColor: colors.border }]}> 
-                <View style={[styles.progressBar, { backgroundColor: colors.border }]}> 
-                  <View style={[styles.progressFill, { width: `${progress}%`, backgroundColor: lesson.accentColor }]} />
-                </View>
-
-                <View style={styles.timeRow}>
-                  <ThemedText style={[styles.timeText, { color: colors.mutedLight }]}>{formatTime(position)}</ThemedText>
-                  <ThemedText style={[styles.timeText, { color: colors.mutedLight }]}>{formatTime(duration || getTotalDuration())}</ThemedText>
-                </View>
-              </View>
-
-              <View style={styles.controlsRow}>
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.secondaryControl,
-                    { backgroundColor: colors.surface, borderColor: colors.border, opacity: pressed ? 0.85 : 1 },
-                  ]}
-                >
-                  <MaterialIcons name="skip-previous" size={26} color={colors.text} />
-                </Pressable>
-
-                <Pressable
-                  onPress={handlePlayPause}
-                  style={({ pressed }) => [
-                    styles.primaryControl,
-                    { backgroundColor: colors.tint, shadowColor: colors.shadow, opacity: pressed ? 0.9 : 1 },
-                  ]}
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <ActivityIndicator color="#FFFFFF" />
-                  ) : (
-                    <MaterialIcons
-                      name={isPlaying ? 'pause' : 'play-arrow'}
-                      size={32}
-                      color="#FFFFFF"
-                    />
-                  )}
-                </Pressable>
-
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.secondaryControl,
-                    { backgroundColor: colors.surface, borderColor: colors.border, opacity: pressed ? 0.85 : 1 },
-                  ]}
-                >
-                  <MaterialIcons name="skip-next" size={26} color={colors.text} />
-                </Pressable>
-              </View>
+            <View style={[styles.metaChip, { backgroundColor: '#DCE8FD' }]}>
+              <ThemedText style={[styles.metaChipText, { color: lesson.accentColor }]}>{lesson.duration}</ThemedText>
             </View>
+          </View>
+
+          <View style={[styles.rail, { backgroundColor: palette.rail }]}>
+            <View style={[styles.railFill, { width: `${progress}%`, backgroundColor: lesson.accentColor }]} />
+          </View>
+
+          <View style={styles.timeRow}>
+            <ThemedText style={[styles.timeText, { color: palette.mutedInk }]}>{formatTime(position)}</ThemedText>
+            <ThemedText style={[styles.timeText, { color: palette.mutedInk }]}>{formatTime(duration || getTotalDuration())}</ThemedText>
+          </View>
+
+          <View style={styles.controlsRow}>
+            <Pressable
+              style={({ pressed }) => [
+                styles.secondaryControl,
+                { backgroundColor: palette.cardBg, borderColor: palette.cardBorder, opacity: pressed ? 0.85 : 1 },
+              ]}
+            >
+              <MaterialIcons name="skip-previous" size={24} color={palette.ink} />
+            </Pressable>
+
+            <Pressable
+              onPress={handlePlayPause}
+              style={({ pressed }) => [
+                styles.primaryControl,
+                { backgroundColor: lesson.accentColor, opacity: pressed ? 0.9 : 1 },
+              ]}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <MaterialIcons name={isPlaying ? 'pause' : 'play-arrow'} size={30} color="#FFFFFF" />
+              )}
+            </Pressable>
+
+            <Pressable
+              style={({ pressed }) => [
+                styles.secondaryControl,
+                { backgroundColor: palette.cardBg, borderColor: palette.cardBorder, opacity: pressed ? 0.85 : 1 },
+              ]}
+            >
+              <MaterialIcons name="skip-next" size={24} color={palette.ink} />
+            </Pressable>
           </View>
         </View>
       </ScrollView>
@@ -283,7 +284,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 16,
-    paddingBottom: 20,
+    paddingBottom: 24,
   },
   headerRow: {
     flexDirection: 'row',
@@ -308,98 +309,82 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
   },
-  playerCardShadow: {
-    borderRadius: 24,
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.1,
-    shadowRadius: 20,
-    elevation: 6,
-  },
-  playerCard: {
+  paperCard: {
     borderWidth: 1,
-    borderRadius: 24,
-    overflow: 'hidden',
+    borderRadius: 16,
+    padding: 16,
+    shadowColor: '#1F1720',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 4,
   },
-  heroImageWrap: {
-    position: 'relative',
+  tape: {
+    width: 82,
+    height: 18,
+    borderRadius: 4,
+    borderWidth: 1,
+    alignSelf: 'center',
+    marginTop: -26,
+    marginBottom: 10,
+    opacity: 0.88,
+    transform: [{ rotate: '-2deg' }],
   },
-  heroImage: {
-    width: '100%',
-    height: 260,
-    backgroundColor: '#E2E8F0',
-  },
-  imageOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(15,23,42,0.2)',
-  },
-  imageMetaRow: {
-    position: 'absolute',
-    top: 12,
-    left: 12,
-    right: 12,
+  titleRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    alignItems: 'center',
     gap: 8,
   },
-  imageBadge: {
+  dot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+  },
+  authorText: {
+    fontSize: 24,
+    lineHeight: 28,
+    fontFamily: 'CrimsonPro_700Bold',
+  },
+  lessonHeadline: {
+    marginTop: 6,
+    fontSize: 20,
+    lineHeight: 24,
+    fontFamily: 'Inter_700Bold',
+  },
+  lessonDescription: {
+    marginTop: 6,
+    fontSize: 14,
+    lineHeight: 20,
+    fontStyle: 'italic',
+  },
+  metaRow: {
+    marginTop: 12,
+    flexDirection: 'row',
+    gap: 8,
+  },
+  metaChip: {
     borderRadius: 999,
     paddingHorizontal: 10,
     paddingVertical: 6,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
   },
-  imageBadgeText: {
-    color: '#FFFFFF',
+  metaChipText: {
     fontSize: 11,
     lineHeight: 13,
     fontFamily: 'Inter_600SemiBold',
   },
-  imageTitleWrap: {
-    position: 'absolute',
-    left: 14,
-    right: 14,
-    bottom: 14,
-  },
-  imageTitle: {
-    color: '#FFFFFF',
-    fontSize: 24,
-    lineHeight: 30,
-    textShadowColor: 'rgba(0,0,0,0.26)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 8,
-  },
-  playerBody: {
-    padding: 16,
-    gap: 16,
-  },
-  lessonDescription: {
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  lessonHeadline: {
-    fontSize: 20,
-    lineHeight: 24,
-    fontFamily: 'CrimsonPro_600SemiBold',
-  },
-  progressCard: {
-    borderWidth: 1,
-    borderRadius: 14,
-    padding: 12,
-    gap: 10,
-  },
-  progressBar: {
+  rail: {
+    marginTop: 14,
     height: 8,
     borderRadius: 999,
     overflow: 'hidden',
   },
-  progressFill: {
+  railFill: {
     height: '100%',
     borderRadius: 999,
   },
   timeRow: {
+    marginTop: 8,
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
   },
   timeText: {
@@ -408,28 +393,25 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_500Medium',
   },
   controlsRow: {
+    marginTop: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 14,
   },
   secondaryControl: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 46,
+    height: 46,
+    borderRadius: 23,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
   primaryControl: {
-    width: 74,
-    height: 74,
-    borderRadius: 37,
+    width: 72,
+    height: 72,
+    borderRadius: 36,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.2,
-    shadowRadius: 16,
-    elevation: 5,
   },
 });
