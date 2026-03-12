@@ -105,10 +105,95 @@ const sidePattern: Array<'left' | 'right'> = [
   'left',
 ];
 
-const ROW_HEIGHT = 124;
+const ROW_HEIGHT = 142;
 const CARD_HEIGHT = 100;
 const TURN_RADIUS = 18;
-const DOCK_INSET = 2;
+const DOCK_INSET = 14;
+const DOT_SIZE = 4;
+const DOT_SPACING = 10;
+
+function renderVerticalDots(
+  keyPrefix: string,
+  x: number,
+  yStart: number,
+  yEnd: number,
+  color: string
+) {
+  const start = Math.min(yStart, yEnd);
+  const length = Math.abs(yEnd - yStart);
+  const count = Math.max(1, Math.floor(length / DOT_SPACING) + 1);
+
+  return Array.from({ length: count }, (_, i) => {
+    const t = count === 1 ? 0 : i / (count - 1);
+    const y = start + t * length;
+    return (
+      <View
+        key={`${keyPrefix}-v-${i}`}
+        style={[
+          styles.pathDot,
+          { backgroundColor: color, left: x - DOT_SIZE / 2, top: y - DOT_SIZE / 2 },
+        ]}
+      />
+    );
+  });
+}
+
+function renderHorizontalDots(
+  keyPrefix: string,
+  xStart: number,
+  xEnd: number,
+  y: number,
+  color: string
+) {
+  const start = Math.min(xStart, xEnd);
+  const length = Math.abs(xEnd - xStart);
+  const count = Math.max(1, Math.floor(length / DOT_SPACING) + 1);
+
+  return Array.from({ length: count }, (_, i) => {
+    const t = count === 1 ? 0 : i / (count - 1);
+    const x = start + t * length;
+    return (
+      <View
+        key={`${keyPrefix}-h-${i}`}
+        style={[
+          styles.pathDot,
+          { backgroundColor: color, left: x - DOT_SIZE / 2, top: y - DOT_SIZE / 2 },
+        ]}
+      />
+    );
+  });
+}
+
+function renderCurveDots(
+  keyPrefix: string,
+  start: { x: number; y: number },
+  control: { x: number; y: number },
+  end: { x: number; y: number },
+  color: string
+) {
+  const estimate =
+    Math.hypot(control.x - start.x, control.y - start.y) +
+    Math.hypot(end.x - control.x, end.y - control.y);
+  const count = Math.max(3, Math.floor(estimate / DOT_SPACING) + 1);
+
+  return Array.from({ length: count }, (_, i) => {
+    const t = count === 1 ? 0 : i / (count - 1);
+    const x =
+      (1 - t) * (1 - t) * start.x + 2 * (1 - t) * t * control.x + t * t * end.x;
+    const y =
+      (1 - t) * (1 - t) * start.y + 2 * (1 - t) * t * control.y + t * t * end.y;
+
+    return (
+      <View
+        key={`${keyPrefix}-c-${i}`}
+        style={[
+          styles.pathDot,
+          { backgroundColor: color, left: x - DOT_SIZE / 2, top: y - DOT_SIZE / 2 },
+        ]}
+      />
+    );
+  });
+}
 
 export default function LessonsScreen() {
   const router = useRouter();
@@ -141,7 +226,7 @@ export default function LessonsScreen() {
       };
 
   const contentWidth = width - 32;
-  const cardWidth = Math.min(Math.floor(contentWidth * 0.82), 420);
+  const cardWidth = Math.min(Math.floor(contentWidth * 0.72), 380);
   const leftCardX = 0;
   const rightCardX = contentWidth - cardWidth;
 
@@ -192,18 +277,9 @@ export default function LessonsScreen() {
 
             if (straightDrop) {
               return (
-                <View
-                  key={`segment-${index}`}
-                  style={[
-                    styles.pathSegmentVertical,
-                    {
-                      left: x1,
-                      top: y1,
-                      height: Math.max(0, y2 - y1),
-                      borderColor: palette.path,
-                    },
-                  ]}
-                />
+                <React.Fragment key={`segment-${index}`}>
+                  {renderVerticalDots(`segment-${index}`, x1, y1, y2, palette.path)}
+                </React.Fragment>
               );
             }
 
@@ -216,18 +292,9 @@ export default function LessonsScreen() {
             );
             if (r < 4) {
               return (
-                <View
-                  key={`segment-${index}`}
-                  style={[
-                    styles.pathSegmentVertical,
-                    {
-                      left: x1,
-                      top: y1,
-                      height: Math.max(0, y2 - y1),
-                      borderColor: palette.path,
-                    },
-                  ]}
-                />
+                <React.Fragment key={`segment-${index}`}>
+                  {renderVerticalDots(`segment-${index}`, x1, y1, y2, palette.path)}
+                </React.Fragment>
               );
             }
 
@@ -235,103 +302,63 @@ export default function LessonsScreen() {
             const horizontalWidth = Math.abs(x2 - x1) - r * 2;
 
             return (
-              <View key={`segment-${index}`}>
-                <View
-                  style={[
-                    styles.pathSegmentVertical,
-                    {
-                      left: x1,
-                      top: y1,
-                      height: Math.max(0, midY - y1 - r),
-                      borderColor: palette.path,
-                    },
-                  ]}
-                />
-
-                {movingRight ? (
-                  <View
-                    style={[
-                      styles.cornerDownRight,
-                      {
-                        left: x1,
-                        top: midY - r,
-                        width: r,
-                        height: r,
-                        borderColor: palette.path,
-                        borderBottomLeftRadius: r,
-                      },
-                    ]}
-                  />
-                ) : (
-                  <View
-                    style={[
-                      styles.cornerDownLeft,
-                      {
-                        left: x1 - r,
-                        top: midY - r,
-                        width: r,
-                        height: r,
-                        borderColor: palette.path,
-                        borderBottomRightRadius: r,
-                      },
-                    ]}
-                  />
+              <React.Fragment key={`segment-${index}`}>
+                {renderVerticalDots(
+                  `segment-${index}-a`,
+                  x1,
+                  y1,
+                  Math.max(y1, midY - r),
+                  palette.path
                 )}
 
-                <View
-                  style={[
-                    styles.pathSegmentHorizontal,
-                    {
-                      top: midY,
-                      left: horizontalLeft,
-                      width: horizontalWidth,
-                      borderColor: palette.path,
-                    },
-                  ]}
-                />
+                {movingRight
+                  ? renderCurveDots(
+                      `segment-${index}-b`,
+                      { x: x1, y: midY - r },
+                      { x: x1, y: midY },
+                      { x: x1 + r, y: midY },
+                      palette.path
+                    )
+                  : renderCurveDots(
+                      `segment-${index}-b`,
+                      { x: x1, y: midY - r },
+                      { x: x1, y: midY },
+                      { x: x1 - r, y: midY },
+                      palette.path
+                    )}
 
-                {movingRight ? (
-                  <View
-                    style={[
-                      styles.cornerRightDown,
-                      {
-                        left: x2 - r,
-                        top: midY,
-                        width: r,
-                        height: r,
-                        borderColor: palette.path,
-                        borderTopRightRadius: r,
-                      },
-                    ]}
-                  />
-                ) : (
-                  <View
-                    style={[
-                      styles.cornerLeftDown,
-                      {
-                        left: x2,
-                        top: midY,
-                        width: r,
-                        height: r,
-                        borderColor: palette.path,
-                        borderTopLeftRadius: r,
-                      },
-                    ]}
-                  />
+                {renderHorizontalDots(
+                  `segment-${index}-c`,
+                  horizontalLeft,
+                  horizontalLeft + horizontalWidth,
+                  midY,
+                  palette.path
                 )}
 
-                <View
-                  style={[
-                    styles.pathSegmentVertical,
-                    {
-                      left: x2,
-                      top: midY + r,
-                      height: Math.max(0, y2 - (midY + r)),
-                      borderColor: palette.path,
-                    },
-                  ]}
-                />
-              </View>
+                {movingRight
+                  ? renderCurveDots(
+                      `segment-${index}-d`,
+                      { x: x2 - r, y: midY },
+                      { x: x2, y: midY },
+                      { x: x2, y: midY + r },
+                      palette.path
+                    )
+                  : renderCurveDots(
+                      `segment-${index}-d`,
+                      { x: x2 + r, y: midY },
+                      { x: x2, y: midY },
+                      { x: x2, y: midY + r },
+                      palette.path
+                    )}
+
+                {renderVerticalDots(
+                  `segment-${index}-e`,
+                  x2,
+                  midY + r,
+                  y2,
+                  palette.path
+                )}
+              </React.Fragment>
             );
           })}
 
@@ -417,39 +444,11 @@ const styles = StyleSheet.create({
   pathCanvas: {
     position: 'relative',
   },
-  pathSegmentVertical: {
+  pathDot: {
     position: 'absolute',
-    borderLeftWidth: 3,
-    borderStyle: 'dotted',
-  },
-  pathSegmentHorizontal: {
-    position: 'absolute',
-    borderTopWidth: 3,
-    borderStyle: 'dotted',
-  },
-  cornerDownRight: {
-    position: 'absolute',
-    borderLeftWidth: 3,
-    borderBottomWidth: 3,
-    borderStyle: 'dotted',
-  },
-  cornerDownLeft: {
-    position: 'absolute',
-    borderRightWidth: 3,
-    borderBottomWidth: 3,
-    borderStyle: 'dotted',
-  },
-  cornerRightDown: {
-    position: 'absolute',
-    borderTopWidth: 3,
-    borderRightWidth: 3,
-    borderStyle: 'dotted',
-  },
-  cornerLeftDown: {
-    position: 'absolute',
-    borderTopWidth: 3,
-    borderLeftWidth: 3,
-    borderStyle: 'dotted',
+    width: DOT_SIZE,
+    height: DOT_SIZE,
+    borderRadius: DOT_SIZE / 2,
   },
   stepRow: {
     position: 'absolute',
