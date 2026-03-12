@@ -105,12 +105,15 @@ const sidePattern: Array<'left' | 'right'> = [
   'left',
 ];
 
-const ROW_HEIGHT = 142;
 const CARD_HEIGHT = 100;
 const TURN_RADIUS = 18;
 const DOCK_INSET = 14;
 const DOT_SIZE = 4;
 const DOT_SPACING = 10;
+const GROUP_STEP = 122;
+const CROSSOVER_STEP = 182;
+const TOP_PADDING = 24;
+const BOTTOM_PADDING = 32;
 
 function renderVerticalDots(
   keyPrefix: string,
@@ -230,10 +233,21 @@ export default function LessonsScreen() {
   const leftCardX = 0;
   const rightCardX = contentWidth - cardWidth;
 
+  const centerYs: number[] = [];
+  let currentCenterY = TOP_PADDING + CARD_HEIGHT / 2;
+  lessons.forEach((_, index) => {
+    if (index > 0) {
+      const prevSide = sidePattern[index - 1] ?? 'right';
+      const nextSide = sidePattern[index] ?? 'right';
+      currentCenterY += prevSide === nextSide ? GROUP_STEP : CROSSOVER_STEP;
+    }
+    centerYs.push(currentCenterY);
+  });
+
   const steps: Step[] = lessons.map((lesson, index) => {
     const side = sidePattern[index] ?? 'right';
     const cardX = side === 'left' ? leftCardX : rightCardX;
-    const cardTop = index * ROW_HEIGHT + (ROW_HEIGHT - CARD_HEIGHT) / 2;
+    const cardTop = centerYs[index] - CARD_HEIGHT / 2;
     const dockX = side === 'left' ? cardX + DOCK_INSET : cardX + cardWidth - DOCK_INSET;
 
     return {
@@ -248,7 +262,7 @@ export default function LessonsScreen() {
     };
   });
 
-  const pathHeight = lessons.length * ROW_HEIGHT;
+  const pathHeight = centerYs[centerYs.length - 1] + CARD_HEIGHT / 2 + BOTTOM_PADDING;
 
   return (
     <ThemedView style={[styles.container, { backgroundColor: palette.appBg }]}> 
@@ -366,7 +380,7 @@ export default function LessonsScreen() {
             const { lesson, side } = step;
 
             return (
-              <View key={lesson.id} style={[styles.stepRow, { top: index * ROW_HEIGHT, height: ROW_HEIGHT }]}> 
+              <View key={lesson.id} style={[styles.stepRow, { top: step.cardTop, height: CARD_HEIGHT }]}> 
                 <Pressable
                   style={({ pressed }) => [
                     styles.lessonCard,
