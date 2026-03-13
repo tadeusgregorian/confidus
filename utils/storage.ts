@@ -2,13 +2,20 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LAST_VISUALISATION_DATE_KEY = '@confidus:lastVisualisationDate';
 const LAST_VISUALISATION_TIMESTAMP_KEY = '@confidus:lastVisualisationTimestamp';
+const COMMITMENT_DATES_KEY = '@confidus:commitmentDates';
 
 /**
- * Get the date string for today in YYYY-MM-DD format
+ * Get a local date string in YYYY-MM-DD format
  */
+function toLocalDateString(date: Date): string {
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, '0');
+  const day = `${date.getDate()}`.padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 function getTodayDateString(): string {
-  const today = new Date();
-  return today.toISOString().split('T')[0];
+  return toLocalDateString(new Date());
 }
 
 /**
@@ -81,5 +88,57 @@ export async function isVisualisationOverdue(): Promise<boolean> {
   } catch (error) {
     console.error('Error checking if visualization is overdue:', error);
     return true;
+  }
+}
+
+/**
+ * Get all committed dates (YYYY-MM-DD)
+ */
+export async function getCommitmentDates(): Promise<string[]> {
+  try {
+    const raw = await AsyncStorage.getItem(COMMITMENT_DATES_KEY);
+    if (!raw) {
+      return [];
+    }
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+    return parsed.filter((value): value is string => typeof value === 'string');
+  } catch (error) {
+    console.error('Error getting commitment dates:', error);
+    return [];
+  }
+}
+
+/**
+ * Mark commitment completed for a date (defaults to today)
+ */
+export async function markCommitmentCompleted(dateString?: string): Promise<void> {
+  try {
+    const date = dateString ?? getTodayDateString();
+    const existing = await getCommitmentDates();
+    if (existing.includes(date)) {
+      return;
+    }
+    const updated = [...existing, date].sort();
+    await AsyncStorage.setItem(COMMITMENT_DATES_KEY, JSON.stringify(updated));
+  } catch (error) {
+    console.error('Error saving commitment completion:', error);
+    throw error;
+  }
+}
+
+/**
+ * Check if commitment was completed today
+ */
+export async function isCommitmentCompletedToday(): Promise<boolean> {
+  try {
+    const today = getTodayDateString();
+    const dates = await getCommitmentDates();
+    return dates.includes(today);
+  } catch (error) {
+    console.error('Error checking commitment completion:', error);
+    return false;
   }
 }

@@ -21,6 +21,7 @@ export function CustomTabButton(props: CustomTabButtonProps) {
     if (!routeName) return "";
     if (routeName === "index") return "Lessons";
     if (routeName === "moments") return "Moments";
+    if (routeName === "calendar") return "Calendar";
     if (routeName === "visualisations") return "Mind";
     return "";
   };

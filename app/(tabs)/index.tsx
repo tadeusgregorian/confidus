@@ -229,7 +229,7 @@ export default function LessonsScreen() {
       };
 
   const contentWidth = width - 32;
-  const cardWidth = Math.min(Math.floor(contentWidth * 0.72), 380);
+  const cardWidth = Math.floor(contentWidth * 0.9);
   const leftCardX = 0;
   const rightCardX = contentWidth - cardWidth;
 
