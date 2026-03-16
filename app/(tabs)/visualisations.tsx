@@ -1,153 +1,333 @@
-import { useFocusEffect, useRouter } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { useEffect, useRef, useState } from 'react';
+import { Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { isVisualisationCompletedToday } from '@/utils/storage';
+import { markVisualisationCompleted } from '@/utils/storage';
+
+type PhraseRound = {
+  positive: string;
+  negatives: string[];
+};
+
+const ROUNDS: PhraseRound[] = [
+  {
+    positive: 'I can do this',
+    negatives: ['I will fail', 'I should stay quiet'],
+  },
+  {
+    positive: 'My voice matters',
+    negatives: ['No one listens', 'I sound silly'],
+  },
+  {
+    positive: 'I stay calm',
+    negatives: ['I am too nervous', 'I will panic'],
+  },
+  {
+    positive: 'I belong here',
+    negatives: ['I do not fit in', 'I will be rejected'],
+  },
+  {
+    positive: 'I grow with action',
+    negatives: ['Better not try', 'I cannot change'],
+  },
+];
+
+const HOLD_MS = 1800;
+const NEGATIVE_STACK_Y = [-74, 72] as const;
 
 export default function VisualisationsScreen() {
-  const router = useRouter();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-  const [isCompleted, setIsCompleted] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const { width } = useWindowDimensions();
 
-  const checkCompletionStatus = useCallback(async () => {
-    try {
-      const completed = await isVisualisationCompletedToday();
-      setIsCompleted(completed);
-    } catch (error) {
-      console.error('Error checking completion status:', error);
-    } finally {
-      setIsLoading(false);
+  const [roundIndex, setRoundIndex] = useState(0);
+  const [holdProgress, setHoldProgress] = useState(0);
+  const [isHolding, setIsHolding] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isFinished, setIsFinished] = useState(false);
+  const [burstProgress, setBurstProgress] = useState(0);
+  const [isBursting, setIsBursting] = useState(false);
+
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const startTimeRef = useRef(0);
+  const burstTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const currentRound = ROUNDS[roundIndex];
+  const cardWidth = Math.min(width - 32, 560);
+
+  const clearTimer = () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
     }
-  }, []);
-
-  useEffect(() => {
-    checkCompletionStatus();
-  }, [checkCompletionStatus]);
-
-  useFocusEffect(
-    useCallback(() => {
-      checkCompletionStatus();
-    }, [checkCompletionStatus])
-  );
-
-  const handleStartVisualisation = () => {
-    router.push('/visualisation-modal');
+    if (burstTimerRef.current) {
+      clearInterval(burstTimerRef.current);
+      burstTimerRef.current = null;
+    }
   };
 
-  if (isLoading) {
-    return (
-      <ThemedView style={styles.container}>
-        <ThemedView style={[styles.loadingWrap, { backgroundColor: colors.background }]}>
-          <View style={[styles.loadingCard, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
-            <View style={[styles.loadingPulse, { backgroundColor: colors.surface }]} />
-            <ThemedText style={{ color: colors.muted }}>Preparing your session...</ThemedText>
-          </View>
-        </ThemedView>
-      </ThemedView>
-    );
-  }
+  useEffect(() => {
+    return () => {
+      clearTimer();
+    };
+  }, []);
+
+  const finishRound = async () => {
+    clearTimer();
+    setIsHolding(false);
+    setHoldProgress(1);
+    setIsTransitioning(true);
+    setIsBursting(true);
+    setBurstProgress(0);
+
+    const burstStart = Date.now();
+    burstTimerRef.current = setInterval(() => {
+      const elapsed = Date.now() - burstStart;
+      const progress = Math.min(elapsed / 220, 1);
+      setBurstProgress(progress);
+
+      if (progress >= 1) {
+        if (burstTimerRef.current) {
+          clearInterval(burstTimerRef.current);
+          burstTimerRef.current = null;
+        }
+      }
+    }, 16);
+
+    if (roundIndex >= ROUNDS.length - 1) {
+      setTimeout(async () => {
+        await markVisualisationCompleted();
+        setIsBursting(false);
+        setBurstProgress(0);
+        setIsFinished(true);
+        setIsTransitioning(false);
+      }, 260);
+      return;
+    }
+
+    setTimeout(() => {
+      setRoundIndex((prev) => prev + 1);
+      setHoldProgress(0);
+      setIsBursting(false);
+      setBurstProgress(0);
+      setIsTransitioning(false);
+    }, 260);
+  };
+
+  const handlePressIn = () => {
+    if (isFinished || isTransitioning || isHolding) {
+      return;
+    }
+
+    setIsHolding(true);
+    startTimeRef.current = Date.now();
+
+    timerRef.current = setInterval(() => {
+      const elapsed = Date.now() - startTimeRef.current;
+      const progress = Math.min(elapsed / HOLD_MS, 1);
+      setHoldProgress(progress);
+
+      if (progress >= 1) {
+        finishRound();
+      }
+    }, 16);
+  };
+
+  const handlePressOut = () => {
+    if (!isHolding || isTransitioning || isFinished) {
+      return;
+    }
+
+    clearTimer();
+    setIsHolding(false);
+    setHoldProgress(0);
+  };
+
+  const resetGame = () => {
+    clearTimer();
+    setRoundIndex(0);
+    setHoldProgress(0);
+    setIsHolding(false);
+    setIsTransitioning(false);
+    setIsFinished(false);
+  };
+
+  const easedProgress = holdProgress * holdProgress * (3 - 2 * holdProgress);
+  const holdElapsed = isHolding ? Math.max(0, Date.now() - startTimeRef.current) : 0;
+  const wave = isHolding ? (Math.sin(holdElapsed / 120) + 1) / 2 : 0;
+  const baseGrowth = easedProgress * 0.16;
+  const pulseGrowth = easedProgress * 0.14 * wave;
+  const burstScale = isBursting ? burstProgress * 1.65 : 0;
+  const positiveScale = 1 + baseGrowth + pulseGrowth + burstScale;
+  const positiveOpacity = isBursting ? Math.max(0, 1 - burstProgress * 1.8) : 1;
+  const positiveBlur = isBursting ? burstProgress * 12 : 0;
+  const negativeOpacity = Math.max(0, 1 - easedProgress * 1.3);
+  const negativeBlur = easedProgress * 16;
+  const ringScale1 =
+    1 + easedProgress * 1.25 + (isHolding ? 0.1 * Math.sin(holdElapsed / 180) : 0);
+  const ringScale2 =
+    1 + easedProgress * 1.65 + (isHolding ? 0.1 * Math.sin(holdElapsed / 220 + 1.2) : 0);
+  const ringScale3 =
+    1 + easedProgress * 2.05 + (isHolding ? 0.1 * Math.sin(holdElapsed / 260 + 2.1) : 0);
+  const ringOpacity = Math.max(0, 0.65 - easedProgress * 0.42);
 
   return (
-    <ThemedView style={styles.container}>
-      <ThemedView style={[styles.screen, { backgroundColor: colors.background }]}>
-        <View style={[styles.heroShell, { shadowColor: colors.shadow }]}> 
-          <View style={[styles.heroCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <View style={[styles.heroTopBand, { backgroundColor: isCompleted ? colors.success : colors.accent }]} />
-            <View style={styles.header}>
-              <ThemedText type="title">Visualisations</ThemedText>
-              <ThemedText style={[styles.subtitle, { color: colors.muted }]}>
-                A daily guided reset to steady your breath and build mental clarity.
-              </ThemedText>
+    <ThemedView style={[styles.container, { backgroundColor: colors.background }]}> 
+      <View style={styles.header}>
+        <ThemedText type="title">Mind Game</ThemedText>
+        <ThemedText style={[styles.subtitle, { color: colors.muted }]}>Hold the positive phrase and push fear away.</ThemedText>
+      </View>
+
+      <View
+        style={[
+          styles.gameCard,
+          {
+            width: cardWidth,
+            backgroundColor: colors.surfaceElevated,
+            borderColor: colors.border,
+            shadowColor: colors.shadow,
+          },
+        ]}
+      >
+        {isFinished ? (
+          <View style={styles.finishedWrap}>
+            <View style={[styles.finishedBadge, { backgroundColor: colors.successSoft, borderColor: colors.border }]}>
+              <ThemedText style={[styles.finishedBadgeText, { color: colors.success }]}>5 / 5</ThemedText>
+            </View>
+            <ThemedText type="subtitle" style={[styles.finishedTitle, { color: colors.text }]}>Great work</ThemedText>
+            <ThemedText style={[styles.finishedText, { color: colors.muted }]}>You trained your focus on confidence and let negative thoughts fade.</ThemedText>
+            <Pressable
+              onPress={resetGame}
+              style={({ pressed }) => [
+                styles.playAgainBtn,
+                { backgroundColor: colors.tint, opacity: pressed ? 0.9 : 1 },
+              ]}
+            >
+              <ThemedText style={[styles.playAgainText, { color: '#FFFFFF' }]}>Play Again</ThemedText>
+            </Pressable>
+          </View>
+        ) : (
+          <>
+            <View style={styles.topRow}>
+              <ThemedText style={[styles.roundText, { color: colors.muted }]}>Round {roundIndex + 1} / {ROUNDS.length}</ThemedText>
+              <ThemedText style={[styles.hintText, { color: colors.mutedLight }]}>Hold to complete</ThemedText>
             </View>
 
-            <View style={styles.contentArea}>
-              {isCompleted ? (
-                <View style={styles.completedContainer}>
+            <View style={styles.stage}>
+              <View
+                style={[
+                  styles.radiationRing,
+                  {
+                    borderColor: colors.accent,
+                    backgroundColor: `${colors.accent}1A`,
+                    transform: [{ scale: ringScale1 }],
+                    opacity: isHolding ? ringOpacity : 0,
+                  },
+                ]}
+              />
+              <View
+                style={[
+                  styles.radiationRing,
+                  {
+                    borderColor: colors.success,
+                    backgroundColor: `${colors.success}14`,
+                    transform: [{ scale: ringScale2 }],
+                    opacity: isHolding ? Math.max(0, ringOpacity - 0.16) : 0,
+                  },
+                ]}
+              />
+              <View
+                style={[
+                  styles.radiationRing,
+                  {
+                    borderColor: colors.warning,
+                    backgroundColor: `${colors.warning}10`,
+                    transform: [{ scale: ringScale3 }],
+                    opacity: isHolding ? Math.max(0, ringOpacity - 0.22) : 0,
+                  },
+                ]}
+              />
+
+              {currentRound.negatives.slice(0, 2).map((negative, idx) => {
+                const baseY = NEGATIVE_STACK_Y[idx % NEGATIVE_STACK_Y.length];
+                const directionY = idx === 0 ? -1 : 1;
+                const y = baseY + easedProgress * directionY * 85;
+                const negScale = 1 - easedProgress * 0.1;
+
+                return (
                   <View
+                    key={`${roundIndex}-${negative}`}
                     style={[
-                      styles.statusOrb,
-                      { backgroundColor: colors.successSoft, borderColor: colors.border },
-                    ]}
-                  >
-                    <View style={[styles.statusOrbInner, { backgroundColor: colors.success }]}>
-                      <IconSymbol name="checkmark" size={30} color={colorScheme === 'dark' ? '#062A27' : '#FFFFFF'} />
-                    </View>
-                  </View>
-
-                  <View style={styles.statusTextBlock}>
-                    <View style={[styles.statusBadge, { backgroundColor: colors.successSoft, borderColor: colors.border }]}>
-                      <ThemedText style={[styles.statusBadgeText, { color: colors.success }]}>Completed today</ThemedText>
-                    </View>
-                    <ThemedText type="subtitle" style={[styles.completedText, { color: colors.text }]}>
-                      Today&apos;s visualisation is done
-                    </ThemedText>
-                    <ThemedText style={[styles.completedSubtext, { color: colors.muted }]}> 
-                      Nice work. Your daily practice is recorded. Return tomorrow for a fresh session.
-                    </ThemedText>
-                  </View>
-                </View>
-              ) : (
-                <View style={styles.startContainer}>
-                  <View style={[styles.sessionPreview, { backgroundColor: colors.surface, borderColor: colors.border }]}> 
-                    <View style={styles.previewRow}>
-                      <View style={[styles.previewIcon, { backgroundColor: colors.accentSoft }]}>
-                        <IconSymbol name="brain" size={20} color={colors.accent} />
-                      </View>
-                      <View style={styles.previewTextBlock}>
-                        <ThemedText type="subtitle" style={[styles.startTitle, { color: colors.text }]}>
-                          Daily Visualisation
-                        </ThemedText>
-                        <ThemedText style={[styles.startDescription, { color: colors.muted }]}> 
-                          Gentle breathing, grounding, and imagery to reset focus in a few minutes.
-                        </ThemedText>
-                      </View>
-                    </View>
-
-                    <View style={styles.previewMetaRow}>
-                      <View style={[styles.metaPill, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                        <IconSymbol name="clock" size={13} color={colors.muted} />
-                        <ThemedText style={[styles.metaText, { color: colors.muted }]}>~5 min</ThemedText>
-                      </View>
-                      <View style={[styles.metaPill, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                        <IconSymbol name="headphones" size={13} color={colors.muted} />
-                        <ThemedText style={[styles.metaText, { color: colors.muted }]}>Audio guided</ThemedText>
-                      </View>
-                    </View>
-                  </View>
-
-                  <Pressable
-                    onPress={handleStartVisualisation}
-                    style={({ pressed }) => [
-                      styles.startButton,
+                      styles.negativeBubble,
                       {
-                        backgroundColor: colors.tint,
-                        shadowColor: colors.shadow,
-                        opacity: pressed ? 0.9 : 1,
+                        transform: [{ translateY: y }, { scale: negScale }],
+                        opacity: negativeOpacity,
                       },
                     ]}
                   >
-                    <View style={styles.startButtonContent}>
-                      <View style={styles.startButtonIconWrap}>
-                        <IconSymbol name="play.fill" size={14} color="#FFFFFF" />
-                      </View>
-                      <ThemedText style={[styles.startButtonText, { color: '#FFFFFF' }]}>
-                        Start visualisation
-                      </ThemedText>
-                    </View>
-                  </Pressable>
-                </View>
-              )}
+                    <ThemedText
+                      style={[
+                        styles.negativeText,
+                        {
+                          color: colors.muted,
+                          textShadowColor: colors.muted,
+                          textShadowOffset: { width: 0, height: 0 },
+                          textShadowRadius: negativeBlur,
+                        },
+                      ]}
+                    >
+                      {negative}
+                    </ThemedText>
+                  </View>
+                );
+              })}
+
+              <Pressable
+                onPressIn={handlePressIn}
+                onPressOut={handlePressOut}
+                style={({ pressed }) => [
+                  styles.positiveBubble,
+                  {
+                    transform: [{ scale: positiveScale }],
+                    opacity: positiveOpacity,
+                    backgroundColor: colors.accentSoft,
+                    borderColor: colors.accent,
+                    shadowColor: colors.accent,
+                    shadowOpacity: pressed ? 0.35 : 0.24,
+                  },
+                ]}
+              >
+                <View
+                  style={[
+                    styles.positiveFill,
+                    {
+                      width: `${holdProgress * 100}%`,
+                      backgroundColor: `${colors.accent}3D`,
+                    },
+                  ]}
+                />
+                <ThemedText
+                  style={[
+                    styles.positiveText,
+                    {
+                      color: colors.accent,
+                      textShadowColor: colors.accent,
+                      textShadowOffset: { width: 0, height: 0 },
+                      textShadowRadius: positiveBlur,
+                    },
+                  ]}
+                >
+                  {currentRound.positive}
+                </ThemedText>
+              </Pressable>
             </View>
-          </View>
-        </View>
-      </ThemedView>
+          </>
+        )}
+      </View>
     </ThemedView>
   );
 }
@@ -155,194 +335,137 @@ export default function VisualisationsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  screen: {
-    flex: 1,
+    alignItems: 'center',
     paddingHorizontal: 16,
-    paddingTop: 52,
+    paddingTop: 54,
     paddingBottom: 20,
   },
-  loadingWrap: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  loadingCard: {
+  header: {
     width: '100%',
-    maxWidth: 360,
-    borderRadius: 20,
-    borderWidth: 1,
-    padding: 18,
-    alignItems: 'center',
-    gap: 10,
+    marginBottom: 12,
   },
-  loadingPulse: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+  subtitle: {
+    marginTop: 4,
+    fontSize: 14,
+    lineHeight: 20,
   },
-  heroShell: {
+  gameCard: {
     flex: 1,
+    borderWidth: 1,
+    borderRadius: 22,
+    padding: 14,
     shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.08,
     shadowRadius: 20,
     elevation: 6,
   },
-  heroCard: {
-    flex: 1,
-    borderRadius: 24,
-    borderWidth: 1,
-    overflow: 'hidden',
-  },
-  heroTopBand: {
-    height: 8,
-    width: '100%',
-  },
-  header: {
-    paddingHorizontal: 18,
-    paddingTop: 16,
-    paddingBottom: 10,
-  },
-  subtitle: {
-    marginTop: 6,
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  contentArea: {
-    flex: 1,
-    padding: 18,
-    justifyContent: 'center',
-  },
-  completedContainer: {
-    alignItems: 'center',
-    gap: 14,
-  },
-  statusOrb: {
-    width: 98,
-    height: 98,
-    borderRadius: 49,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  statusOrbInner: {
-    width: 62,
-    height: 62,
-    borderRadius: 31,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  statusTextBlock: {
-    alignItems: 'center',
-    maxWidth: 320,
-  },
-  statusBadge: {
-    borderWidth: 1,
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    marginBottom: 10,
-  },
-  statusBadgeText: {
-    fontSize: 11,
-    lineHeight: 13,
-    fontFamily: 'Inter_700Bold',
-    textTransform: 'uppercase',
-    letterSpacing: 0.4,
-  },
-  completedText: {
-    textAlign: 'center',
-    marginBottom: 8,
-    fontSize: 22,
-  },
-  completedSubtext: {
-    textAlign: 'center',
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  startContainer: {
-    gap: 16,
-    width: '100%',
-    alignItems: 'center',
-  },
-  sessionPreview: {
-    width: '100%',
-    borderRadius: 20,
-    borderWidth: 1,
-    padding: 14,
-    gap: 14,
-  },
-  previewRow: {
+  topRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 12,
-  },
-  previewIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    justifyContent: 'space-between',
     alignItems: 'center',
-    justifyContent: 'center',
   },
-  previewTextBlock: {
-    flex: 1,
-  },
-  startTitle: {
-    fontSize: 22,
-    marginBottom: 4,
-  },
-  startDescription: {
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  previewMetaRow: {
-    flexDirection: 'row',
-    gap: 8,
-    flexWrap: 'wrap',
-  },
-  metaPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    borderRadius: 999,
-    borderWidth: 1,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-  },
-  metaText: {
-    fontSize: 11,
-    lineHeight: 13,
+  roundText: {
+    fontSize: 13,
+    lineHeight: 16,
     fontFamily: 'Inter_600SemiBold',
   },
-  startButton: {
-    width: '100%',
+  hintText: {
+    fontSize: 12,
+    lineHeight: 14,
+    fontFamily: 'Inter_500Medium',
+  },
+  stage: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
     borderRadius: 18,
-    minHeight: 56,
+  },
+  radiationRing: {
+    position: 'absolute',
+    width: 228,
+    height: 228,
+    borderRadius: 114,
+    borderWidth: 3,
+  },
+  positiveBubble: {
+    minWidth: 210,
+    minHeight: 74,
+    paddingHorizontal: 20,
+    borderRadius: 35,
+    borderWidth: 2,
+    overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 16,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.16,
-    shadowRadius: 16,
-    elevation: 5,
+    zIndex: 5,
+    shadowOffset: { width: 0, height: 10 },
+    shadowRadius: 18,
+    elevation: 6,
   },
-  startButtonContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
+  positiveFill: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
   },
-  startButtonIconWrap: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.18)',
+  positiveText: {
+    fontSize: 26,
+    lineHeight: 30,
+    fontFamily: 'CrimsonPro_700Bold',
+    textAlign: 'center',
+  },
+  negativeBubble: {
+    position: 'absolute',
+    maxWidth: 320,
+    minHeight: 36,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  startButtonText: {
-    fontSize: 15,
-    lineHeight: 18,
+  negativeText: {
+    fontSize: 24,
+    lineHeight: 28,
+    fontFamily: 'CrimsonPro_700Bold',
+    textAlign: 'center',
+  },
+  finishedWrap: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 12,
+  },
+  finishedBadge: {
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    marginBottom: 12,
+  },
+  finishedBadgeText: {
+    fontSize: 13,
+    lineHeight: 16,
+    fontFamily: 'Inter_700Bold',
+  },
+  finishedTitle: {
+    marginBottom: 8,
+  },
+  finishedText: {
+    fontSize: 14,
+    lineHeight: 20,
+    textAlign: 'center',
+    marginBottom: 18,
+  },
+  playAgainBtn: {
+    height: 44,
+    borderRadius: 22,
+    paddingHorizontal: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  playAgainText: {
+    fontSize: 14,
+    lineHeight: 16,
     fontFamily: 'Inter_700Bold',
   },
 });
