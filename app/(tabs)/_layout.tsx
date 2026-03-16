@@ -12,9 +12,9 @@ export default function TabLayout() {
         tabBarShowLabel: false,
       }}>
       <Tabs.Screen name="index" options={{ title: 'Lessons' }} />
+      <Tabs.Screen name="sessions" options={{ title: 'Sessions' }} />
       <Tabs.Screen name="moments" options={{ title: 'Moments' }} />
       <Tabs.Screen name="calendar" options={{ title: 'Calendar' }} />
-      <Tabs.Screen name="visualisations" options={{ title: 'Mind' }} />
     </Tabs>
   );
 }

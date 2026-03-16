@@ -5,7 +5,7 @@ import { Platform, StyleSheet, View } from "react-native";
 
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { isCommitmentCompletedToday, isVisualisationOverdue } from "@/utils/storage";
+import { isCommitmentCompletedToday } from "@/utils/storage";
 import { CustomTabButton } from "./custom-tab-button";
 
 export function CustomTabBar({
@@ -15,19 +15,14 @@ export function CustomTabBar({
 }: BottomTabBarProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
-  const [showVisualisationBadge, setShowVisualisationBadge] = useState(false);
   const [showCalendarBadge, setShowCalendarBadge] = useState(false);
 
   useEffect(() => {
-    checkStatuses();
+    checkCalendarStatus();
   }, [state.index]);
 
-  const checkStatuses = async () => {
-    const [overdue, commitmentCompleted] = await Promise.all([
-      isVisualisationOverdue(),
-      isCommitmentCompletedToday(),
-    ]);
-    setShowVisualisationBadge(overdue);
+  const checkCalendarStatus = async () => {
+    const commitmentCompleted = await isCommitmentCompletedToday();
     setShowCalendarBadge(!commitmentCompleted);
   };
 
@@ -77,15 +72,13 @@ export function CustomTabBar({
 
         const getIconName = () => {
           if (route.name === "index") return "book-open";
+          if (route.name === "sessions") return "layer-group";
           if (route.name === "moments") return "bolt";
           if (route.name === "calendar") return "calendar-check";
-          if (route.name === "visualisations") return "brain";
           return "circle";
         };
 
-        const showBadge =
-          (route.name === "visualisations" && showVisualisationBadge) ||
-          (route.name === "calendar" && showCalendarBadge);
+        const showBadge = route.name === "calendar" && showCalendarBadge;
 
           return (
             <CustomTabButton
