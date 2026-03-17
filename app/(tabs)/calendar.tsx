@@ -285,7 +285,7 @@ export default function CalendarScreen() {
           style={[
             styles.doneCard,
             {
-              backgroundColor: colorScheme === 'dark' ? '#134E4A' : '#DCFCE7',
+              backgroundColor: colorScheme === 'dark' ? '#1F3B2B' : '#ECFDF3',
               borderColor: colors.border,
             },
           ]}
@@ -312,18 +312,18 @@ export default function CalendarScreen() {
           style={({ pressed }) => [
             styles.commitButton,
             {
-              backgroundColor: colors.tint,
-              borderColor: colors.tint,
+              backgroundColor: colors.surfaceElevated,
+              borderColor: colors.border,
               shadowColor: colors.shadow,
               opacity: pressed ? 0.9 : 1,
             },
           ]}
         >
-          <View style={styles.commitIcon}>
-            <MaterialIcons name="pan-tool-alt" size={22} color="#FFFFFF" />
+          <View style={[styles.commitIcon, { borderColor: colors.border, backgroundColor: colors.surface }]}>
+            <MaterialIcons name="pan-tool-alt" size={20} color={colors.accent} />
           </View>
 
-          <ThemedText style={[styles.commitButtonText, { color: '#FFFFFF' }]}>Make Commitment For Today</ThemedText>
+          <ThemedText style={[styles.commitButtonText, { color: colors.text }]}>Make Commitment For Today</ThemedText>
         </Pressable>
       )}
 
@@ -428,18 +428,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 14,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.16,
-    shadowRadius: 16,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 3,
   },
   commitIcon: {
     width: 38,
     height: 38,
     borderRadius: 19,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.25)',
-    backgroundColor: 'rgba(255,255,255,0.2)',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 10,
@@ -452,7 +450,7 @@ const styles = StyleSheet.create({
   },
   doneCard: {
     marginTop: 14,
-    borderRadius: 14,
+    borderRadius: 16,
     borderWidth: 1,
     paddingHorizontal: 12,
     paddingVertical: 18,
@@ -467,11 +465,11 @@ const styles = StyleSheet.create({
     borderRadius: 26,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
+    shadowColor: '#111827',
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.08,
     shadowRadius: 12,
-    elevation: 6,
+    elevation: 3,
   },
   doneTitle: {
     fontSize: 16,
@@ -489,13 +487,18 @@ const styles = StyleSheet.create({
   },
   calendarCard: {
     borderWidth: 1,
-    borderRadius: 18,
+    borderRadius: 16,
     padding: 14,
+    shadowColor: '#111827',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 3,
   },
   monthLabel: {
     fontSize: 18,
     lineHeight: 24,
-    fontFamily: 'CrimsonPro_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
     marginBottom: 8,
   },
   weekdayRow: {
@@ -535,18 +538,18 @@ const styles = StyleSheet.create({
   },
   modalBackdrop: {
     flex: 1,
-    backgroundColor: 'rgba(5,10,20,0.45)',
+    backgroundColor: 'rgba(17,24,39,0.25)',
     justifyContent: 'center',
     paddingHorizontal: 20,
   },
   modalCard: {
     borderWidth: 1,
-    borderRadius: 20,
+    borderRadius: 18,
     padding: 16,
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.2,
-    shadowRadius: 24,
-    elevation: 10,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 4,
   },
   messageLabel: {
     fontSize: 12,

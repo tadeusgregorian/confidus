@@ -8,11 +8,6 @@ import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import {
-  CrimsonPro_400Regular,
-  CrimsonPro_600SemiBold,
-  CrimsonPro_700Bold,
-} from '@expo-google-fonts/crimson-pro';
-import {
   Inter_400Regular,
   Inter_600SemiBold,
   Inter_700Bold,
@@ -27,9 +22,6 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [fontsLoaded, fontError] = useFonts({
-    CrimsonPro_400Regular,
-    CrimsonPro_600SemiBold,
-    CrimsonPro_700Bold,
     Inter_400Regular,
     Inter_600SemiBold,
     Inter_700Bold,

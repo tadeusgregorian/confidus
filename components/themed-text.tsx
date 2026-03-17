@@ -48,9 +48,10 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_600SemiBold',
   },
   title: {
-    fontSize: 32,
-    fontFamily: 'CrimsonPro_700Bold',
-    lineHeight: 32,
+    fontSize: 30,
+    fontFamily: 'Inter_700Bold',
+    lineHeight: 34,
+    letterSpacing: -0.4,
   },
   subtitle: {
     fontSize: 20,
@@ -64,6 +65,6 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 18,
     lineHeight: 24,
-    fontFamily: 'CrimsonPro_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
   },
 });

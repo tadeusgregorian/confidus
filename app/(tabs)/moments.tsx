@@ -1,11 +1,10 @@
-import { Image } from 'expo-image';
+import { FontAwesome5 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
@@ -13,7 +12,7 @@ type AudioItem = {
   id: string;
   title: string;
   duration: string;
-  imageUrl: string;
+  icon: React.ComponentProps<typeof FontAwesome5>['name'];
 };
 
 const TITLES = [
@@ -62,89 +61,90 @@ const DURATIONS = [
   '5:33',
 ] as const;
 
+const ICONS: ReadonlyArray<React.ComponentProps<typeof FontAwesome5>['name']> = [
+  'seedling',
+  'leaf',
+  'feather-alt',
+  'spa',
+  'moon',
+  'sun',
+  'star',
+  'magic',
+  'wind',
+  'water',
+  'fire',
+  'bolt',
+  'heart',
+  'dove',
+  'cloud',
+  'snowflake',
+  'gem',
+  'smile-beam',
+  'compass',
+  'lightbulb',
+];
+
 const audioItems: AudioItem[] = TITLES.map((title, index) => ({
-  id: `${index + 1}`,
+  id: `m-${index + 1}`,
   title,
   duration: DURATIONS[index],
-  imageUrl: `https://picsum.photos/seed/confidus-bw-${index + 1}/300/300?grayscale`,
+  icon: ICONS[index % ICONS.length],
 }));
 
 export default function MomentsScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-  const isDark = (colorScheme ?? 'light') === 'dark';
-
-  const renderAudioItem = ({ item, index }: { item: AudioItem; index: number }) => (
-    <Pressable
-      onPress={() => router.push(`/lesson/${item.id}`)}
-      style={({ pressed }) => [
-        styles.audioCard,
-        {
-          backgroundColor: colors.card,
-          borderColor: colors.border,
-          shadowColor: colors.shadow,
-          opacity: pressed ? 0.9 : 1,
-        },
-      ]}
-    >
-      <View style={[styles.thumbFrame, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-        <Image
-          source={{ uri: item.imageUrl }}
-          style={styles.thumbnail}
-          contentFit="cover"
-          transition={120}
-          cachePolicy="disk"
-        />
-      </View>
-
-      <View style={styles.audioBody}>
-        <ThemedText style={[styles.audioTitle, { color: colors.text }]} numberOfLines={1}>
-          {item.title}
-        </ThemedText>
-        <View style={styles.metaRow}>
-          <View style={[styles.chip, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            <IconSymbol name="headphones" size={12} color={colors.muted} />
-            <ThemedText style={[styles.metaText, { color: colors.muted }]}>Audio</ThemedText>
-          </View>
-          <ThemedText style={[styles.dot, { color: colors.mutedLight }]}>•</ThemedText>
-          <ThemedText style={[styles.metaText, { color: colors.muted }]}>{item.duration}</ThemedText>
-        </View>
-      </View>
-
-      <View
-        style={[
-          styles.playButton,
-          {
-            backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(15,23,42,0.06)',
-            borderColor: colors.border,
-          },
-        ]}
-      >
-        <IconSymbol name="play.fill" size={14} color={colors.accent} />
-      </View>
-
-      <View style={[styles.rowIndexPill, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-        <ThemedText style={[styles.rowIndexText, { color: colors.muted }]}>{`${index + 1}`.padStart(2, '0')}</ThemedText>
-      </View>
-    </Pressable>
-  );
 
   return (
     <ThemedView style={styles.container}>
       <FlatList
         data={audioItems}
-        renderItem={renderAudioItem}
+        numColumns={5}
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.listContent, { backgroundColor: colors.background }]}
-        style={[styles.list, { backgroundColor: colors.background }]}
+        contentContainerStyle={[styles.content, { backgroundColor: colors.background }]}
+        columnWrapperStyle={styles.column}
         ListHeaderComponent={
-          <View style={[styles.headerCard, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, shadowColor: colors.shadow }]}> 
+          <View style={[styles.headerCard, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
             <ThemedText type="title">Moments</ThemedText>
-            <ThemedText style={[styles.subtitle, { color: colors.muted }]}>A curated stream of short audio moments with monochrome art.</ThemedText>
+            <ThemedText style={[styles.subtitle, { color: colors.muted }]}>
+              Tap any symbol to open and play a short audio moment.
+            </ThemedText>
           </View>
         }
+        renderItem={({ item, index }) => (
+          <Pressable
+            onPress={() =>
+              router.push({
+                pathname: '/lesson/[id]',
+                params: {
+                  id: item.id,
+                  title: item.title,
+                  duration: item.duration,
+                  author: 'Moments',
+                  category: 'Moment',
+                },
+              })
+            }
+            style={({ pressed }) => [
+              styles.gridItem,
+              {
+                backgroundColor: colors.card,
+                borderColor: colors.border,
+                shadowColor: colors.shadow,
+                opacity: pressed ? 0.8 : 1,
+              },
+            ]}
+          >
+            <View style={[styles.iconWrap, { backgroundColor: colors.accentSoft }]}>
+              <FontAwesome5 name={item.icon} size={16} color={colors.accent} solid />
+            </View>
+            <ThemedText style={[styles.index, { color: colors.muted }]}>
+              {`${index + 1}`.padStart(2, '0')}
+            </ThemedText>
+          </Pressable>
+        )}
       />
     </ThemedView>
   );
@@ -154,106 +154,47 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  list: {
-    flex: 1,
-  },
-  listContent: {
-    paddingHorizontal: 16,
+  content: {
     paddingTop: 52,
-    paddingBottom: 24,
+    paddingHorizontal: 16,
+    paddingBottom: 28,
   },
   headerCard: {
     borderWidth: 1,
-    borderRadius: 20,
+    borderRadius: 16,
     padding: 16,
-    marginBottom: 14,
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.07,
-    shadowRadius: 18,
-    elevation: 4,
+    marginBottom: 16,
   },
   subtitle: {
     marginTop: 6,
     fontSize: 14,
     lineHeight: 20,
   },
-  audioCard: {
-    borderWidth: 1,
-    borderRadius: 18,
-    minHeight: 92,
+  column: {
+    justifyContent: 'space-between',
     marginBottom: 10,
-    padding: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.06,
-    shadowRadius: 14,
-    elevation: 3,
-    position: 'relative',
   },
-  thumbFrame: {
-    width: 64,
-    height: 64,
+  gridItem: {
+    width: '18.4%',
+    aspectRatio: 1,
+    borderWidth: 1,
     borderRadius: 14,
-    borderWidth: 1,
-    overflow: 'hidden',
-    marginRight: 12,
-  },
-  thumbnail: {
-    width: '100%',
-    height: '100%',
-  },
-  audioBody: {
-    flex: 1,
-    minWidth: 0,
-  },
-  audioTitle: {
-    fontSize: 17,
-    lineHeight: 22,
-    fontFamily: 'CrimsonPro_600SemiBold',
-  },
-  metaRow: {
-    marginTop: 6,
-    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    elevation: 2,
   },
-  chip: {
-    borderWidth: 1,
-    borderRadius: 999,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-  },
-  metaText: {
-    fontSize: 12,
-    lineHeight: 14,
-    fontFamily: 'Inter_500Medium',
-  },
-  dot: {
-    marginHorizontal: 6,
-    fontSize: 11,
-  },
-  playButton: {
+  iconWrap: {
     width: 34,
     height: 34,
     borderRadius: 17,
-    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    marginLeft: 10,
   },
-  rowIndexPill: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    borderWidth: 1,
-    borderRadius: 999,
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-  },
-  rowIndexText: {
+  index: {
+    marginTop: 6,
     fontSize: 10,
     lineHeight: 12,
     fontFamily: 'Inter_700Bold',

@@ -138,26 +138,28 @@ export default function SessionsScreen() {
 
   const palette = isDark
     ? {
-        appBg: '#070D1A',
-        panelBg: '#0B1328',
-        panelBorder: '#1F2A44',
-        title: '#F8FAFF',
-        text: '#D3DBEC',
-        subtle: '#8EA1C6',
-        cardBg: '#101A31',
-        cardBorder: '#243452',
-        path: '#6CA0FF',
+        appBg: '#10131A',
+        panelBg: '#1A1F2B',
+        panelBorder: '#2A3140',
+        title: '#F3F4F6',
+        text: '#CBD5E1',
+        subtle: '#9CA3AF',
+        cardBg: '#1E2431',
+        cardBorder: '#2A3140',
+        path: '#7C8EA6',
+        accent: '#94A3B8',
       }
     : {
-        appBg: '#EEF4FF',
-        panelBg: '#F8FBFF',
-        panelBorder: '#D4E3FF',
-        title: '#12203D',
-        text: '#385073',
-        subtle: '#5B7298',
+        appBg: '#F3F4F6',
+        panelBg: '#FFFFFF',
+        panelBorder: '#E5E7EB',
+        title: '#151A22',
+        text: '#4B5563',
+        subtle: '#6B7280',
         cardBg: '#FFFFFF',
-        cardBorder: '#D7E3F8',
-        path: '#5B8CFF',
+        cardBorder: '#E5E7EB',
+        path: '#9AA4B2',
+        accent: '#64748B',
       };
 
   const contentWidth = width - 32;
@@ -310,10 +312,10 @@ export default function SessionsScreen() {
                   onPress={() => router.push(`/lesson/${lesson.id}`)}
                 >
                   <View style={[styles.lessonTopRow, side === 'right' && styles.lessonTopRowRight]}>
-                    <View style={[styles.playIcon, { backgroundColor: lesson.accentColor }]}> 
+                    <View style={[styles.playIcon, { backgroundColor: palette.accent }]}> 
                       <IconSymbol name="play.fill" size={11} color="#FFFFFF" />
                     </View>
-                    <ThemedText style={[styles.lessonAuthor, { color: lesson.accentColor }, side === 'right' && styles.rightAlignedText]}>
+                    <ThemedText style={[styles.lessonAuthor, { color: palette.subtle }, side === 'right' && styles.rightAlignedText]}>
                       {lesson.author}
                     </ThemedText>
                   </View>
@@ -352,9 +354,14 @@ const styles = StyleSheet.create({
   },
   headerCard: {
     borderWidth: 1,
-    borderRadius: 20,
+    borderRadius: 18,
     padding: 16,
     marginBottom: 18,
+    shadowColor: '#111827',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 3,
   },
   pathLabel: {
     fontSize: 12,
@@ -385,16 +392,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   lessonCard: {
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1,
     paddingVertical: 10,
     paddingHorizontal: 12,
     justifyContent: 'space-between',
-    shadowColor: '#0B1222',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.1,
-    shadowRadius: 16,
-    elevation: 5,
+    shadowColor: '#111827',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 3,
   },
   lessonLeft: {
     marginRight: 'auto',

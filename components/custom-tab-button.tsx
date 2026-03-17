@@ -31,13 +31,11 @@ export function CustomTabButton(props: CustomTabButtonProps) {
       {...pressableProps}
       style={[
         styles.button,
-        { borderColor: colors.hairline },
         isSelected
           ? [
               styles.selectedButton,
               {
                 backgroundColor: colors.tabBarActiveBg,
-                borderColor: "rgba(255,255,255,0.12)",
               },
             ]
           : [
@@ -68,7 +66,7 @@ const styles = StyleSheet.create({
   button: {
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 1,
+    borderWidth: 0,
   },
   unselectedButton: {
     width: 54,

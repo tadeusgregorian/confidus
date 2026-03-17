@@ -12,14 +12,13 @@ type GroupedLesson = {
   id: string;
   title: string;
   duration: string;
-  category: 'Theory' | 'Meditation';
+  category: 'Theory' | 'Meditation' | 'Moment';
 };
 
 type LessonGroup = {
   author: string;
   description: string;
   accentColor: string;
-  noteColor: string;
   lessons: [GroupedLesson, GroupedLesson];
 };
 
@@ -28,7 +27,6 @@ const lessonGroups: LessonGroup[] = [
     author: 'Gillian Butler',
     description: 'Confidence Comes After Action',
     accentColor: '#6D7AB4',
-    noteColor: '#FDF8EE',
     lessons: [
       { id: '1', title: 'Confidence Comes After Action', duration: '15:30', category: 'Theory' },
       { id: '2', title: 'Confidence Comes After Action', duration: '12:45', category: 'Meditation' },
@@ -38,7 +36,6 @@ const lessonGroups: LessonGroup[] = [
     author: 'Susan Cain',
     description: 'Introversion Is Not Shyness',
     accentColor: '#B17390',
-    noteColor: '#FEF7F0',
     lessons: [
       { id: '3', title: 'Introversion Is Not Shyness', duration: '18:20', category: 'Theory' },
       { id: '4', title: 'Introversion Is Not Shyness', duration: '22:10', category: 'Meditation' },
@@ -48,7 +45,6 @@ const lessonGroups: LessonGroup[] = [
     author: 'Susan Jeffers',
     description: 'Confident People Act Despite Fear',
     accentColor: '#8A6CAC',
-    noteColor: '#FCF8F1',
     lessons: [
       { id: '5', title: 'Confident People Act Despite Fear', duration: '16:55', category: 'Theory' },
       { id: '6', title: 'Confident People Act Despite Fear', duration: '14:30', category: 'Meditation' },
@@ -58,7 +54,6 @@ const lessonGroups: LessonGroup[] = [
     author: 'Jon Kabat-Zinn',
     description: 'Full Catastrophe Living',
     accentColor: '#A77A56',
-    noteColor: '#FEF9F2',
     lessons: [
       { id: '7', title: 'Full Catastrophe Living', duration: '16:55', category: 'Theory' },
       { id: '8', title: 'Full Catastrophe Living', duration: '14:30', category: 'Meditation' },
@@ -75,7 +70,6 @@ const getLessonData = (id: string) => {
         author: group.author,
         description: group.description,
         accentColor: group.accentColor,
-        noteColor: group.noteColor,
       };
     }
   }
@@ -87,32 +81,41 @@ const getLessonData = (id: string) => {
     author: fallbackGroup.author,
     description: fallbackGroup.description,
     accentColor: fallbackGroup.accentColor,
-    noteColor: fallbackGroup.noteColor,
   };
 };
 
 export default function LessonPlayerScreen() {
   const router = useRouter();
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, title, duration: durationParam, author, category } = useLocalSearchParams<{
+    id: string;
+    title?: string;
+    duration?: string;
+    author?: string;
+    category?: 'Theory' | 'Meditation' | 'Moment';
+  }>();
   const colorScheme = useColorScheme();
   const isDark = (colorScheme ?? 'light') === 'dark';
 
   const palette = isDark
     ? {
-        appBg: '#1A1720',
-        cardBg: '#2A2433',
-        cardBorder: '#3A334A',
-        ink: '#F5F0E8',
-        mutedInk: '#C9C2B6',
-        rail: '#4B415E',
+        appBg: '#10131A',
+        cardBg: '#1E2431',
+        cardBorder: '#2A3140',
+        ink: '#F3F4F6',
+        mutedInk: '#9CA3AF',
+        rail: '#313A4C',
+        accent: '#94A3B8',
+        accentSoft: '#273042',
       }
     : {
-        appBg: '#F6F0E8',
-        cardBg: '#FFFDF9',
-        cardBorder: '#E8DECF',
-        ink: '#40362E',
-        mutedInk: '#8A7A6A',
-        rail: '#E6DCCF',
+        appBg: '#F3F4F6',
+        cardBg: '#FFFFFF',
+        cardBorder: '#E5E7EB',
+        ink: '#151A22',
+        mutedInk: '#6B7280',
+        rail: '#E5E7EB',
+        accent: '#64748B',
+        accentSoft: '#EEF2F7',
       };
 
   const [isPlaying, setIsPlaying] = useState(false);
@@ -122,6 +125,16 @@ export default function LessonPlayerScreen() {
   const [progressInterval, setProgressInterval] = useState<ReturnType<typeof setInterval> | null>(null);
 
   const lesson = getLessonData(id || '1');
+  const resolvedLesson = {
+    ...lesson,
+    title: typeof title === 'string' ? title : lesson.title,
+    duration: typeof durationParam === 'string' ? durationParam : lesson.duration,
+    author: typeof author === 'string' ? author : lesson.author,
+    category:
+      category === 'Theory' || category === 'Meditation' || category === 'Moment'
+        ? category
+        : lesson.category,
+  };
 
   useEffect(() => {
     return () => {
@@ -139,7 +152,7 @@ export default function LessonPlayerScreen() {
   };
 
   const getTotalDuration = () => {
-    const [minutes, seconds] = lesson.duration.split(':').map(Number);
+    const [minutes, seconds] = resolvedLesson.duration.split(':').map(Number);
     return (minutes * 60 + seconds) * 1000;
   };
 
@@ -205,32 +218,30 @@ export default function LessonPlayerScreen() {
           >
             <MaterialIcons name="arrow-back" size={20} color={palette.ink} />
           </Pressable>
-          <ThemedText style={[styles.headerLabel, { color: palette.mutedInk }]}>Journal Entry</ThemedText>
+          <ThemedText style={[styles.headerLabel, { color: palette.mutedInk }]}>Audio Session</ThemedText>
           <View style={styles.headerSpacer} />
         </View>
 
-        <View style={[styles.paperCard, { backgroundColor: lesson.noteColor, borderColor: palette.cardBorder }]}> 
-          <View style={[styles.tape, { backgroundColor: '#F4E1C7', borderColor: palette.cardBorder }]} />
-
+        <View style={[styles.paperCard, { backgroundColor: palette.cardBg, borderColor: palette.cardBorder }]}> 
           <View style={styles.titleRow}>
-            <View style={[styles.dot, { backgroundColor: lesson.accentColor }]} />
-            <ThemedText style={[styles.authorText, { color: palette.ink }]}>{lesson.author}</ThemedText>
+            <View style={[styles.dot, { backgroundColor: palette.accent }]} />
+            <ThemedText style={[styles.authorText, { color: palette.ink }]}>{resolvedLesson.author}</ThemedText>
           </View>
 
-          <ThemedText style={[styles.lessonHeadline, { color: palette.ink }]}>{lesson.title}</ThemedText>
+          <ThemedText style={[styles.lessonHeadline, { color: palette.ink }]}>{resolvedLesson.title}</ThemedText>
           <ThemedText style={[styles.lessonDescription, { color: palette.mutedInk }]}>{lesson.description}</ThemedText>
 
           <View style={styles.metaRow}>
-            <View style={[styles.metaChip, { backgroundColor: '#EAE0F7' }]}>
-              <ThemedText style={[styles.metaChipText, { color: lesson.accentColor }]}>{lesson.category}</ThemedText>
+            <View style={[styles.metaChip, { backgroundColor: palette.accentSoft }]}>
+              <ThemedText style={[styles.metaChipText, { color: palette.accent }]}>{resolvedLesson.category}</ThemedText>
             </View>
-            <View style={[styles.metaChip, { backgroundColor: '#DCE8FD' }]}>
-              <ThemedText style={[styles.metaChipText, { color: lesson.accentColor }]}>{lesson.duration}</ThemedText>
+            <View style={[styles.metaChip, { backgroundColor: palette.accentSoft }]}>
+              <ThemedText style={[styles.metaChipText, { color: palette.accent }]}>{resolvedLesson.duration}</ThemedText>
             </View>
           </View>
 
           <View style={[styles.rail, { backgroundColor: palette.rail }]}>
-            <View style={[styles.railFill, { width: `${progress}%`, backgroundColor: lesson.accentColor }]} />
+            <View style={[styles.railFill, { width: `${progress}%`, backgroundColor: palette.accent }]} />
           </View>
 
           <View style={styles.timeRow}>
@@ -252,7 +263,7 @@ export default function LessonPlayerScreen() {
               onPress={handlePlayPause}
               style={({ pressed }) => [
                 styles.primaryControl,
-                { backgroundColor: lesson.accentColor, opacity: pressed ? 0.9 : 1 },
+                { backgroundColor: palette.accent, opacity: pressed ? 0.9 : 1 },
               ]}
               disabled={isLoading}
             >
@@ -311,24 +322,13 @@ const styles = StyleSheet.create({
   },
   paperCard: {
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: 18,
     padding: 16,
-    shadowColor: '#1F1720',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
-    elevation: 4,
-  },
-  tape: {
-    width: 82,
-    height: 18,
-    borderRadius: 4,
-    borderWidth: 1,
-    alignSelf: 'center',
-    marginTop: -26,
-    marginBottom: 10,
-    opacity: 0.88,
-    transform: [{ rotate: '-2deg' }],
+    shadowColor: '#111827',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 3,
   },
   titleRow: {
     flexDirection: 'row',
@@ -341,9 +341,9 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   authorText: {
-    fontSize: 24,
-    lineHeight: 28,
-    fontFamily: 'CrimsonPro_700Bold',
+    fontSize: 22,
+    lineHeight: 26,
+    fontFamily: 'Inter_700Bold',
   },
   lessonHeadline: {
     marginTop: 6,
@@ -355,7 +355,6 @@ const styles = StyleSheet.create({
     marginTop: 6,
     fontSize: 14,
     lineHeight: 20,
-    fontStyle: 'italic',
   },
   metaRow: {
     marginTop: 12,
@@ -390,7 +389,7 @@ const styles = StyleSheet.create({
   timeText: {
     fontSize: 12,
     lineHeight: 14,
-    fontFamily: 'Inter_500Medium',
+    fontFamily: 'Inter_600SemiBold',
   },
   controlsRow: {
     marginTop: 16,

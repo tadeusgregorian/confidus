@@ -42,7 +42,6 @@ export function CustomTabBar({
           styles.container,
           {
             backgroundColor: colors.tabBar,
-            borderColor: colors.hairline,
             shadowColor: colors.shadow,
           },
         ]}
@@ -96,7 +95,7 @@ export function CustomTabBar({
                   color={isFocused ? colors.tabIconSelected : colors.tabIconDefault}
                   solid
                 />
-                {showBadge && <View style={[styles.badge, { borderColor: colors.tabBar }]} />}
+                {showBadge && <View style={styles.badge} />}
               </View>
             </CustomTabButton>
           );
@@ -121,7 +120,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: 7,
     gap: 8,
-    borderWidth: 1,
+    borderWidth: 0,
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.18,
     shadowRadius: 20,
@@ -135,6 +134,6 @@ const styles = StyleSheet.create({
     height: 10,
     borderRadius: 5,
     backgroundColor: "#F43F5E",
-    borderWidth: 2,
+    borderWidth: 0,
   },
 });
