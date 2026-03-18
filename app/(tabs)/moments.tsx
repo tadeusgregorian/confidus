@@ -1,4 +1,4 @@
-import { FontAwesome5 } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
@@ -12,7 +12,7 @@ type AudioItem = {
   id: string;
   title: string;
   duration: string;
-  icon: React.ComponentProps<typeof FontAwesome5>['name'];
+  icon: React.ComponentProps<typeof MaterialCommunityIcons>['name'];
 };
 
 const TITLES = [
@@ -61,27 +61,27 @@ const DURATIONS = [
   '5:33',
 ] as const;
 
-const ICONS: ReadonlyArray<React.ComponentProps<typeof FontAwesome5>['name']> = [
-  'seedling',
-  'leaf',
-  'feather-alt',
-  'spa',
-  'moon',
-  'sun',
-  'star',
-  'magic',
-  'wind',
-  'water',
+const ICONS: ReadonlyArray<React.ComponentProps<typeof MaterialCommunityIcons>['name']> = [
+  'flower-tulip-outline',
+  'sprout-outline',
+  'butterfly-outline',
+  'meditation',
+  'moon-waning-crescent',
+  'weather-sunny',
+  'star-four-points-outline',
+  'shimmer',
+  'waves',
+  'water-outline',
   'fire',
-  'bolt',
-  'heart',
-  'dove',
-  'cloud',
+  'lightning-bolt-outline',
+  'heart-outline',
+  'bird',
+  'cloud-outline',
   'snowflake',
-  'gem',
-  'smile-beam',
-  'compass',
-  'lightbulb',
+  'diamond-stone',
+  'head-heart-outline',
+  'compass-outline',
+  'lightbulb-on-outline',
 ];
 
 const audioItems: AudioItem[] = TITLES.map((title, index) => ({
@@ -129,20 +129,39 @@ export default function MomentsScreen() {
             }
             style={({ pressed }) => [
               styles.gridItem,
+              index > 1 && styles.gridItemInactive,
               {
-                backgroundColor: colors.card,
-                borderColor: colors.border,
-                shadowColor: colors.shadow,
                 opacity: pressed ? 0.8 : 1,
               },
             ]}
           >
-            <View style={[styles.iconWrap, { backgroundColor: colors.accentSoft }]}>
-              <FontAwesome5 name={item.icon} size={16} color={colors.accent} solid />
+            <View
+              style={[
+                styles.glyphStack,
+                {
+                  backgroundColor: colors.surfaceElevated,
+                  shadowColor: colors.shadow,
+                },
+              ]}
+            >
+              <View style={[styles.iconWrap, { backgroundColor: colors.accentSoft }]}>
+                <MaterialCommunityIcons
+                  name={item.icon}
+                  size={17}
+                  color={colors.accent}
+                  style={index > 1 ? styles.softBlurIcon : undefined}
+                />
+              </View>
+              <ThemedText
+                style={[
+                  styles.index,
+                  { color: colors.muted },
+                  index > 1 && styles.softBlurText,
+                ]}
+              >
+                {`${index + 1}`.padStart(2, '0')}
+              </ThemedText>
             </View>
-            <ThemedText style={[styles.index, { color: colors.muted }]}>
-              {`${index + 1}`.padStart(2, '0')}
-            </ThemedText>
           </Pressable>
         )}
       />
@@ -156,7 +175,7 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingTop: 52,
-    paddingHorizontal: 16,
+    paddingHorizontal: 30,
     paddingBottom: 28,
   },
   headerCard: {
@@ -172,17 +191,27 @@ const styles = StyleSheet.create({
   },
   column: {
     justifyContent: 'space-between',
-    marginBottom: 10,
+    marginBottom: 8,
   },
   gridItem: {
-    width: '18.4%',
-    aspectRatio: 1,
-    borderWidth: 1,
-    borderRadius: 14,
+    width: '20%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 1,
+  },
+  gridItemInactive: {
+    opacity: 0.38,
+    transform: [{ scale: 0.97 }],
+  },
+  glyphStack: {
+    width: 56,
+    borderRadius: 16,
+    paddingTop: 6,
+    paddingBottom: 5,
     alignItems: 'center',
     justifyContent: 'center',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
+    shadowOpacity: 0.08,
     shadowRadius: 10,
     elevation: 2,
   },
@@ -194,10 +223,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   index: {
-    marginTop: 6,
+    marginTop: 5,
     fontSize: 10,
     lineHeight: 12,
     fontFamily: 'Inter_700Bold',
     letterSpacing: 0.4,
+  },
+  softBlurIcon: {
+    textShadowColor: 'rgba(17,24,39,0.25)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 5,
+  },
+  softBlurText: {
+    textShadowColor: 'rgba(17,24,39,0.2)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 4,
   },
 });
