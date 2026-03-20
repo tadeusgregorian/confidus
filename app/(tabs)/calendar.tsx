@@ -11,6 +11,7 @@ import {
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { Shadows } from '@/constants/shadows';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import {
@@ -314,7 +315,6 @@ export default function CalendarScreen() {
             {
               backgroundColor: colors.surfaceElevated,
               borderColor: colors.border,
-              shadowColor: colors.shadow,
               opacity: pressed ? 0.9 : 1,
             },
           ]}
@@ -335,7 +335,6 @@ export default function CalendarScreen() {
               {
                 backgroundColor: colors.surfaceElevated,
                 borderColor: colors.border,
-                shadowColor: colors.shadow,
               },
             ]}
             onPress={() => {}}
@@ -428,10 +427,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 14,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    elevation: 3,
+    ...Shadows.surfaceMd,
   },
   commitIcon: {
     width: 38,
@@ -465,11 +461,7 @@ const styles = StyleSheet.create({
     borderRadius: 26,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#111827',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 3,
+    ...Shadows.surfaceMd,
   },
   doneTitle: {
     fontSize: 16,
@@ -489,11 +481,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 16,
     padding: 14,
-    shadowColor: '#111827',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    elevation: 3,
+    ...Shadows.surfaceMd,
   },
   monthLabel: {
     fontSize: 18,
@@ -546,10 +534,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 18,
     padding: 16,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
-    elevation: 4,
+    ...Shadows.surfaceLg,
   },
   messageLabel: {
     fontSize: 12,

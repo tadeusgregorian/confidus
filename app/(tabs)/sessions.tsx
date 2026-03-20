@@ -5,6 +5,7 @@ import { Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from 're
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { Shadows } from '@/constants/shadows';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 type SessionItem = {
@@ -357,11 +358,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     padding: 16,
     marginBottom: 18,
-    shadowColor: '#111827',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    elevation: 3,
+    ...Shadows.surfaceMd,
   },
   pathLabel: {
     fontSize: 12,
@@ -397,11 +394,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 12,
     justifyContent: 'space-between',
-    shadowColor: '#111827',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    elevation: 3,
+    ...Shadows.surfaceMd,
   },
   lessonLeft: {
     marginRight: 'auto',

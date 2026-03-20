@@ -6,6 +6,7 @@ import { ActivityIndicator, Platform, Pressable, ScrollView, StyleSheet, View } 
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { Shadows } from '@/constants/shadows';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 type GroupedLesson = {
@@ -324,11 +325,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 18,
     padding: 16,
-    shadowColor: '#111827',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    elevation: 3,
+    ...Shadows.surfaceMd,
   },
   titleRow: {
     flexDirection: 'row',

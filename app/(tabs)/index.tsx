@@ -5,6 +5,7 @@ import { Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from 're
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { Shadows } from '@/constants/shadows';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 type PathLesson = {
@@ -201,7 +202,7 @@ function renderCurveDots(
 export default function LessonsScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme();
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const isDark = (colorScheme ?? 'light') === 'dark';
 
   const palette = isDark
@@ -265,11 +266,42 @@ export default function LessonsScreen() {
   });
 
   const pathHeight = centerYs[centerYs.length - 1] + CARD_HEIGHT / 2 + BOTTOM_PADDING;
+  const patternStep = 34;
+  const patternColumns = Math.ceil(width / patternStep) + 2;
+  const patternRows = Math.ceil((height + 900) / patternStep);
+  const patternCount = patternColumns * patternRows;
 
   return (
-    <ThemedView style={[styles.container, { backgroundColor: palette.appBg }]}> 
+    <ThemedView style={[styles.container, { backgroundColor: palette.appBg }]}>
+      <View
+        style={[
+          styles.backgroundPattern,
+          {
+            left: -16,
+            width: width + 32,
+            height: patternRows * patternStep,
+          },
+        ]}
+        pointerEvents="none"
+      >
+        {Array.from({ length: patternCount }, (_, i) => (
+          <View key={`pattern-${i}`} style={styles.patternCell}>
+            <View
+              style={[
+                styles.patternDot,
+                {
+                  backgroundColor: palette.path,
+                  opacity: i % 4 === 0 ? 0.18 : 0.1,
+                },
+              ]}
+            />
+          </View>
+        ))}
+      </View>
+
       <ScrollView
-        contentContainerStyle={[styles.listContent, { backgroundColor: palette.appBg }]}
+        style={styles.contentScroll}
+        contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
       >
         <View style={[styles.headerCard, { backgroundColor: palette.panelBg, borderColor: palette.panelBorder }]}> 
@@ -432,22 +464,44 @@ export default function LessonsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    overflow: 'hidden',
+    position: 'relative',
   },
   listContent: {
     paddingHorizontal: 16,
     paddingTop: 54,
     paddingBottom: 32,
+    position: 'relative',
+  },
+  contentScroll: {
+    position: 'relative',
+    zIndex: 1,
+  },
+  backgroundPattern: {
+    position: 'absolute',
+    top: 0,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignContent: 'flex-start',
+    zIndex: 0,
+  },
+  patternCell: {
+    width: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  patternDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 999,
   },
   headerCard: {
     borderWidth: 1,
     borderRadius: 18,
     padding: 16,
     marginBottom: 18,
-    shadowColor: '#111827',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    elevation: 3,
+    ...Shadows.surfaceMd,
   },
   pathLabel: {
     fontSize: 12,
@@ -483,11 +537,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 12,
     justifyContent: 'space-between',
-    shadowColor: '#111827',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    elevation: 3,
+    ...Shadows.surfaceMd,
   },
   lessonLeft: {
     marginRight: 'auto',

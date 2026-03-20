@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { Platform, StyleSheet, View } from "react-native";
 
 import { Colors } from "@/constants/theme";
+import { Shadows } from "@/constants/shadows";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { isCommitmentCompletedToday } from "@/utils/storage";
 import { CustomTabButton } from "./custom-tab-button";
@@ -121,10 +122,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 7,
     gap: 8,
     borderWidth: 0,
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.18,
-    shadowRadius: 20,
-    elevation: 12,
+    ...Shadows.floatingNav,
   },
   badge: {
     position: "absolute",
