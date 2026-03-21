@@ -46,6 +46,7 @@ export function DayTimelineScreen({
   const hasFocusVisual = variant === 'default' && !!focusVisuals?.length;
   const visual = hasFocusVisual ? focusVisuals[Math.min(focusedIndex, focusVisuals.length - 1)] : null;
   const compactRowStep = 102;
+  const focusPanelHeight = Math.min(420, height * 0.45);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -73,7 +74,7 @@ export function DayTimelineScreen({
           style={[
             styles.focusVisualPanel,
             {
-              height: Math.min(420, height * 0.45),
+              height: focusPanelHeight,
             },
           ]}
         >
@@ -99,7 +100,7 @@ export function DayTimelineScreen({
         contentContainerStyle={[
           styles.content,
           hasFocusVisual && {
-            paddingBottom: Math.min(470, height * 0.52),
+            paddingBottom: focusPanelHeight + 56,
           },
         ]}
         showsVerticalScrollIndicator={false}
