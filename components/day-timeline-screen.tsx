@@ -94,14 +94,14 @@ export function DayTimelineScreen({
                     ]}
                   >
                     {isCompleted || isPast ? (
-                      <MaterialIcons name="check" size={22} color="#CBB8FF" />
+                      <MaterialIcons name="check" size={22} color="#214C36" />
                     ) : isCurrent ? (
                       <View style={styles.markerInnerCurrent} />
                     ) : (
                       <MaterialIcons
                         name={isNext ? 'radio-button-unchecked' : 'lock'}
                         size={isNext ? 18 : 16}
-                        color={isNext ? '#CBB8FF' : 'rgba(203,184,255,0.55)'}
+                        color={isNext ? '#214C36' : '#B2A897'}
                       />
                     )}
                   </View>
@@ -167,7 +167,7 @@ export function DayTimelineScreen({
                   <View style={styles.cardFooter}>
                     {variant === 'orb' ? <View /> : (
                       <View style={styles.durationWrap}>
-                        <MaterialIcons name="schedule" size={16} color="rgba(232,224,255,0.78)" />
+                        <MaterialIcons name="schedule" size={16} color="#8A7B67" />
                         <ThemedText style={styles.durationText}>{item.duration}</ThemedText>
                       </View>
                     )}
@@ -191,7 +191,7 @@ export function DayTimelineScreen({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#09122A',
+    backgroundColor: '#F7F1E7',
   },
   content: {
     paddingHorizontal: 18,
@@ -207,12 +207,12 @@ const styles = StyleSheet.create({
     lineHeight: 16,
     letterSpacing: 1.6,
     textTransform: 'uppercase',
-    color: 'rgba(203,184,255,0.74)',
+    color: '#8A7B67',
     fontFamily: 'Inter_600SemiBold',
   },
   title: {
     marginTop: 6,
-    color: '#F2ECFF',
+    color: '#214C36',
     fontSize: 30,
     lineHeight: 34,
   },
@@ -222,12 +222,12 @@ const styles = StyleSheet.create({
   },
   rail: {
     position: 'absolute',
-    left: 31,
-    top: 8,
-    bottom: 28,
-    width: 3,
+    left: 30,
+    top: 26,
+    bottom: 52,
+    width: 2,
     borderRadius: 999,
-    backgroundColor: 'rgba(203,184,255,0.42)',
+    backgroundColor: '#D8C9B6',
   },
   row: {
     flexDirection: 'row',
@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
     marginBottom: 34,
   },
   rowFaded: {
-    opacity: 0.34,
+    opacity: 0.42,
   },
   markerColumn: {
     width: 62,
@@ -246,27 +246,27 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: '#F1E8DA',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
+    borderColor: '#DCCFBC',
     alignItems: 'center',
     justifyContent: 'center',
   },
   markerOuterPast: {
-    backgroundColor: '#CBB8FF',
-    borderColor: '#CBB8FF',
+    backgroundColor: '#FFF9F0',
+    borderColor: '#DCCFBC',
     ...Shadows.surfaceLg,
   },
   markerOuterCurrent: {
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: '#CBB8FF',
-    borderColor: '#11182E',
+    backgroundColor: '#F1E5D6',
+    borderColor: '#214C36',
     borderWidth: 4,
-    shadowColor: '#B8A7FF',
+    shadowColor: '#D9B998',
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.26,
+    shadowOpacity: 0.18,
     shadowRadius: 18,
     elevation: 8,
   },
@@ -274,7 +274,7 @@ const styles = StyleSheet.create({
     width: 14,
     height: 14,
     borderRadius: 7,
-    backgroundColor: '#3D2B74',
+    backgroundColor: '#214C36',
     borderWidth: 0,
     alignItems: 'center',
     justifyContent: 'center',
@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     paddingHorizontal: 18,
     paddingVertical: 16,
-    backgroundColor: 'rgba(18,28,57,0.88)',
+    backgroundColor: '#FFF9F0',
     justifyContent: 'space-between',
   },
   cardOrb: {
@@ -295,8 +295,8 @@ const styles = StyleSheet.create({
   },
   cardCurrent: {
     borderWidth: 1,
-    borderColor: 'rgba(203,184,255,0.22)',
-    backgroundColor: 'rgba(24,34,68,0.95)',
+    borderColor: '#E0D2BF',
+    backgroundColor: '#FFFDF8',
     ...Shadows.surfaceLg,
   },
   cardPressed: {
@@ -307,28 +307,28 @@ const styles = StyleSheet.create({
     lineHeight: 15,
     letterSpacing: 1.3,
     textTransform: 'uppercase',
-    color: 'rgba(203,184,255,0.82)',
+    color: '#8A7B67',
     fontFamily: 'Inter_600SemiBold',
   },
   cardTitle: {
     marginTop: 7,
     fontSize: 21,
     lineHeight: 26,
-    color: '#EEE6FF',
+    color: '#214C36',
     fontFamily: 'Inter_600SemiBold',
   },
   cardTitleOrb: {
     marginTop: 14,
     fontSize: 18,
     lineHeight: 23,
-    color: '#F3EDFF',
+    color: '#214C36',
     fontFamily: 'CrimsonPro_600SemiBold',
   },
   cardDescription: {
     marginTop: 7,
     fontSize: 13,
     lineHeight: 20,
-    color: 'rgba(233,226,248,0.78)',
+    color: '#756C60',
     maxWidth: '94%',
   },
   subtitleTag: {
@@ -337,19 +337,19 @@ const styles = StyleSheet.create({
     lineHeight: 14,
     letterSpacing: 1.1,
     textTransform: 'uppercase',
-    color: 'rgba(210,218,249,0.68)',
+    color: '#8A7B67',
     fontFamily: 'Inter_600SemiBold',
   },
   artCard: {
     height: 210,
     borderRadius: 28,
     overflow: 'hidden',
-    backgroundColor: '#0C1734',
+    backgroundColor: '#D46E3F',
     marginTop: 10,
   },
   artBackdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#0A132B',
+    backgroundColor: '#D9794B',
   },
   artGlow: {
     position: 'absolute',
@@ -361,22 +361,22 @@ const styles = StyleSheet.create({
   artGlowMist: {
     top: 10,
     left: 58,
-    backgroundColor: 'rgba(90,170,255,0.28)',
+    backgroundColor: 'rgba(255,244,222,0.42)',
   },
   artGlowOrb: {
     top: 50,
     left: 62,
-    backgroundColor: 'rgba(255,126,190,0.34)',
+    backgroundColor: 'rgba(255,222,198,0.5)',
   },
   artGlowSpiral: {
     top: 30,
     left: 46,
-    backgroundColor: 'rgba(92,148,255,0.22)',
+    backgroundColor: 'rgba(250,240,209,0.4)',
   },
   artGlowFlare: {
     top: 24,
     left: 72,
-    backgroundColor: 'rgba(160,196,255,0.26)',
+    backgroundColor: 'rgba(255,241,229,0.44)',
   },
   artSecondaryGlow: {
     position: 'absolute',
@@ -388,22 +388,22 @@ const styles = StyleSheet.create({
   artSecondaryGlowMist: {
     top: 58,
     left: 108,
-    backgroundColor: 'rgba(198,232,255,0.34)',
+    backgroundColor: 'rgba(35,103,78,0.22)',
   },
   artSecondaryGlowOrb: {
     top: 62,
     left: 104,
-    backgroundColor: 'rgba(255,220,244,0.55)',
+    backgroundColor: 'rgba(255,247,237,0.58)',
   },
   artSecondaryGlowSpiral: {
     top: 88,
     left: 94,
-    backgroundColor: 'rgba(255,222,188,0.42)',
+    backgroundColor: 'rgba(33,76,54,0.24)',
   },
   artSecondaryGlowFlare: {
     top: 74,
     left: 94,
-    backgroundColor: 'rgba(214,225,255,0.5)',
+    backgroundColor: 'rgba(255,247,235,0.62)',
   },
   durationPill: {
     position: 'absolute',
@@ -412,7 +412,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 9,
     height: 22,
     borderRadius: 11,
-    backgroundColor: 'rgba(95,107,146,0.38)',
+    backgroundColor: 'rgba(255,249,240,0.42)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -421,7 +421,7 @@ const styles = StyleSheet.create({
     lineHeight: 12,
     letterSpacing: 0.9,
     textTransform: 'uppercase',
-    color: 'rgba(239,243,255,0.82)',
+    color: '#FFFDF8',
     fontFamily: 'Inter_600SemiBold',
   },
   cardFooter: {
@@ -439,7 +439,7 @@ const styles = StyleSheet.create({
   durationText: {
     fontSize: 13,
     lineHeight: 16,
-    color: 'rgba(232,224,255,0.72)',
+    color: '#7A7164',
     fontFamily: 'Inter_600SemiBold',
   },
   ctaButton: {
@@ -447,14 +447,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#CBB8FF',
+    backgroundColor: '#214C36',
     alignItems: 'center',
     justifyContent: 'center',
   },
   ctaText: {
     fontSize: 15,
     lineHeight: 18,
-    color: '#3C2E72',
+    color: '#FFF9F0',
     fontFamily: 'Inter_700Bold',
   },
 });

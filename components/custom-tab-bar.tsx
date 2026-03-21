@@ -43,12 +43,10 @@ export function CustomTabBar({
           styles.container,
           {
             backgroundColor: colors.tabBar,
-            borderColor: "rgba(214,222,255,0.12)",
             shadowColor: colors.shadow,
           },
         ]}
       >
-        <View style={styles.glassHighlight} />
         {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
         const isFocused = state.index === index;
@@ -123,18 +121,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: 10,
     gap: 8,
-    borderWidth: 1,
+    borderWidth: 0,
     ...Shadows.floatingNav,
     overflow: "visible",
-  },
-  glassHighlight: {
-    position: "absolute",
-    top: 1,
-    left: 18,
-    right: 18,
-    height: 20,
-    borderRadius: 999,
-    backgroundColor: "rgba(255,255,255,0.05)",
   },
   badge: {
     position: "absolute",
