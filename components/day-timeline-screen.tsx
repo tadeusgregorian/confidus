@@ -1,7 +1,8 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { Image } from 'expo-image';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -23,6 +24,10 @@ type DayTimelineScreenProps = {
   items: DayTimelineItem[];
   currentDayIndex?: number;
   variant?: 'default' | 'orb';
+  focusVisuals?: ReadonlyArray<{
+    imageUrl: string;
+    tint: string;
+  }>;
 };
 
 export function DayTimelineScreen({
@@ -31,9 +36,16 @@ export function DayTimelineScreen({
   items,
   currentDayIndex = 1,
   variant = 'default',
+  focusVisuals,
 }: DayTimelineScreenProps) {
   const router = useRouter();
+  const { height } = useWindowDimensions();
   const [completedIds, setCompletedIds] = useState<string[]>([]);
+  const [focusedIndex, setFocusedIndex] = useState(0);
+
+  const hasFocusVisual = variant === 'default' && !!focusVisuals?.length;
+  const visual = hasFocusVisual ? focusVisuals[Math.min(focusedIndex, focusVisuals.length - 1)] : null;
+  const compactRowStep = 102;
 
   useFocusEffect(
     React.useCallback(() => {
@@ -56,9 +68,57 @@ export function DayTimelineScreen({
 
   return (
     <ThemedView style={styles.container}>
+      {visual ? (
+        <View
+          style={[
+            styles.focusVisualPanel,
+            {
+              height: Math.min(420, height * 0.45),
+            },
+          ]}
+        >
+          <Image
+            source={{ uri: visual.imageUrl }}
+            style={styles.focusImage}
+            contentFit="cover"
+            transition={180}
+          />
+          <View style={[styles.focusImageTint, { backgroundColor: visual.tint }]} />
+          <View style={styles.focusImageShade} />
+          <View style={styles.focusImageLabel}>
+            <ThemedText style={styles.focusLabelDay}>{`Day ${focusedIndex + 1}`}</ThemedText>
+            <ThemedText style={styles.focusLabelTitle}>
+              {items[Math.min(focusedIndex, items.length - 1)]?.title}
+            </ThemedText>
+          </View>
+        </View>
+      ) : null}
+
       <ScrollView
-        contentContainerStyle={styles.content}
+        style={hasFocusVisual ? styles.scrollWithVisual : undefined}
+        contentContainerStyle={[
+          styles.content,
+          hasFocusVisual && {
+            paddingBottom: Math.min(470, height * 0.52),
+          },
+        ]}
         showsVerticalScrollIndicator={false}
+        scrollEventThrottle={16}
+        onScroll={(event) => {
+          if (!hasFocusVisual) {
+            return;
+          }
+          const nextIndex = Math.max(
+            0,
+            Math.min(
+              items.length - 1,
+              Math.round(event.nativeEvent.contentOffset.y / compactRowStep)
+            )
+          );
+          if (nextIndex !== focusedIndex) {
+            setFocusedIndex(nextIndex);
+          }
+        }}
       >
         <View style={styles.header}>
           <ThemedText style={styles.eyebrow}>{eyebrow}</ThemedText>
@@ -68,39 +128,61 @@ export function DayTimelineScreen({
         </View>
 
         <View style={styles.timeline}>
-          <View style={styles.rail} />
-
           {items.map((item, index) => {
             const isCompleted = completedIds.includes(item.id);
             const isPast = index < currentDayIndex;
             const isCurrent = index === currentDayIndex;
             const isNext = index === currentDayIndex + 1;
             const isFadedFuture = index > currentDayIndex + 1;
+            const isLast = index === items.length - 1;
+            const isFocused = hasFocusVisual && index === focusedIndex;
 
             return (
               <View
                 key={item.id}
                 style={[
                   styles.row,
+                  variant === 'default' && styles.rowCompact,
                   isFadedFuture && styles.rowFaded,
                 ]}
               >
-                <View style={styles.markerColumn}>
+                {!isLast ? (
+                  <View
+                    style={[
+                      styles.connectorSegment,
+                      variant === 'default' && styles.connectorSegmentCompact,
+                    ]}
+                  />
+                ) : null}
+
+                <View
+                  style={[
+                    styles.markerColumn,
+                    variant === 'default' && styles.markerColumnCompact,
+                  ]}
+                >
                   <View
                     style={[
                       styles.markerOuter,
+                      variant === 'default' && styles.markerOuterCompact,
                       isCurrent && !isCompleted && styles.markerOuterCurrent,
+                      variant === 'default' && isCurrent && !isCompleted && styles.markerOuterCurrentCompact,
                       (isPast || isCompleted) && styles.markerOuterPast,
                     ]}
                   >
                     {isCompleted || isPast ? (
                       <MaterialIcons name="check" size={22} color="#214C36" />
                     ) : isCurrent ? (
-                      <View style={styles.markerInnerCurrent} />
+                      <View
+                        style={[
+                          styles.markerInnerCurrent,
+                          variant === 'default' && styles.markerInnerCurrentCompact,
+                        ]}
+                      />
                     ) : (
                       <MaterialIcons
                         name={isNext ? 'radio-button-unchecked' : 'lock'}
-                        size={isNext ? 18 : 16}
+                        size={variant === 'default' ? (isNext ? 14 : 13) : (isNext ? 18 : 16)}
                         color={isNext ? '#214C36' : '#B2A897'}
                       />
                     )}
@@ -111,12 +193,14 @@ export function DayTimelineScreen({
                   onPress={() => router.push(`/lesson/${item.id}`)}
                   style={({ pressed }) => [
                     styles.card,
+                    variant === 'default' && styles.cardCompact,
                     variant === 'orb' && styles.cardOrb,
                     isCurrent && styles.cardCurrent,
+                    isFocused && styles.cardFocused,
                     pressed && styles.cardPressed,
                   ]}
                 >
-                  <ThemedText style={styles.dayLabel}>
+                  <ThemedText style={[styles.dayLabel, variant === 'default' && styles.dayLabelCompact]}>
                     {`Day ${index + 1}`.toUpperCase()}
                     {isCurrent ? ' • Active' : ''}
                   </ThemedText>
@@ -157,26 +241,17 @@ export function DayTimelineScreen({
                     </>
                   ) : (
                     <>
-                      <ThemedText style={styles.cardTitle}>{item.title}</ThemedText>
-                      <ThemedText style={styles.cardDescription}>
-                        {item.description}
-                      </ThemedText>
+                      <ThemedText style={[styles.cardTitle, styles.cardTitleCompact]}>{item.title}</ThemedText>
                     </>
                   )}
 
-                  <View style={styles.cardFooter}>
+                  <View style={[styles.cardFooter, variant === 'default' && styles.cardFooterCompact]}>
                     {variant === 'orb' ? <View /> : (
                       <View style={styles.durationWrap}>
                         <MaterialIcons name="schedule" size={16} color="#8A7B67" />
-                        <ThemedText style={styles.durationText}>{item.duration}</ThemedText>
+                        <ThemedText style={[styles.durationText, styles.durationTextCompact]}>{item.duration}</ThemedText>
                       </View>
                     )}
-
-                    {isCurrent ? (
-                      <View style={styles.ctaButton}>
-                        <ThemedText style={styles.ctaText}>Start Now</ThemedText>
-                      </View>
-                    ) : null}
                   </View>
                 </Pressable>
               </View>
@@ -193,10 +268,55 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F7F1E7',
   },
+  scrollWithVisual: {
+    zIndex: 1,
+  },
   content: {
     paddingHorizontal: 18,
     paddingTop: 58,
     paddingBottom: 42,
+  },
+  focusVisualPanel: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    overflow: 'hidden',
+    backgroundColor: '#EDE2D3',
+    zIndex: 3,
+  },
+  focusImage: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  focusImageTint: {
+    ...StyleSheet.absoluteFillObject,
+    opacity: 0.22,
+  },
+  focusImageShade: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(18,24,20,0.08)',
+  },
+  focusImageLabel: {
+    position: 'absolute',
+    left: 22,
+    right: 22,
+    bottom: 92,
+  },
+  focusLabelDay: {
+    fontSize: 11,
+    lineHeight: 14,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+    color: '#FFF8F0',
+    fontFamily: 'Inter_600SemiBold',
+  },
+  focusLabelTitle: {
+    marginTop: 6,
+    fontSize: 28,
+    lineHeight: 32,
+    color: '#FFF8F0',
+    fontFamily: 'CrimsonPro_600SemiBold',
+    maxWidth: '72%',
   },
   header: {
     marginBottom: 18,
@@ -220,19 +340,28 @@ const styles = StyleSheet.create({
     position: 'relative',
     paddingBottom: 20,
   },
-  rail: {
+  row: {
+    position: 'relative',
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 34,
+  },
+  rowCompact: {
+    marginBottom: 20,
+  },
+  connectorSegment: {
     position: 'absolute',
     left: 30,
-    top: 26,
-    bottom: 52,
+    top: 52,
+    bottom: -34,
     width: 2,
     borderRadius: 999,
     backgroundColor: '#D8C9B6',
   },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: 34,
+  connectorSegmentCompact: {
+    left: 21,
+    top: 42,
+    bottom: -20,
   },
   rowFaded: {
     opacity: 0.42,
@@ -241,6 +370,10 @@ const styles = StyleSheet.create({
     width: 62,
     alignItems: 'center',
     paddingTop: 4,
+  },
+  markerColumnCompact: {
+    width: 44,
+    paddingTop: 2,
   },
   markerOuter: {
     width: 48,
@@ -251,6 +384,11 @@ const styles = StyleSheet.create({
     borderColor: '#DCCFBC',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  markerOuterCompact: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
   },
   markerOuterPast: {
     backgroundColor: '#FFF9F0',
@@ -270,6 +408,14 @@ const styles = StyleSheet.create({
     shadowRadius: 18,
     elevation: 8,
   },
+  markerOuterCurrentCompact: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    borderWidth: 3,
+    shadowRadius: 12,
+    elevation: 5,
+  },
   markerInnerCurrent: {
     width: 14,
     height: 14,
@@ -279,14 +425,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  markerInnerCurrentCompact: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+  },
   card: {
     flex: 1,
-    minHeight: 136,
+    minHeight: 112,
     borderRadius: 30,
     paddingHorizontal: 18,
     paddingVertical: 16,
     backgroundColor: '#FFF9F0',
     justifyContent: 'space-between',
+  },
+  cardCompact: {
+    minHeight: 82,
+    borderRadius: 22,
+    paddingHorizontal: 14,
+    paddingVertical: 11,
   },
   cardOrb: {
     minHeight: 318,
@@ -299,6 +456,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFDF8',
     ...Shadows.surfaceLg,
   },
+  cardFocused: {
+    borderWidth: 1.5,
+    borderColor: '#214C36',
+    backgroundColor: '#FFFDF8',
+    shadowColor: '#2B2116',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    elevation: 7,
+  },
   cardPressed: {
     opacity: 0.9,
   },
@@ -310,6 +477,11 @@ const styles = StyleSheet.create({
     color: '#8A7B67',
     fontFamily: 'Inter_600SemiBold',
   },
+  dayLabelCompact: {
+    fontSize: 10,
+    lineHeight: 13,
+    letterSpacing: 1,
+  },
   cardTitle: {
     marginTop: 7,
     fontSize: 21,
@@ -317,19 +489,17 @@ const styles = StyleSheet.create({
     color: '#214C36',
     fontFamily: 'Inter_600SemiBold',
   },
+  cardTitleCompact: {
+    marginTop: 4,
+    fontSize: 16,
+    lineHeight: 20,
+  },
   cardTitleOrb: {
     marginTop: 14,
     fontSize: 18,
     lineHeight: 23,
     color: '#214C36',
     fontFamily: 'CrimsonPro_600SemiBold',
-  },
-  cardDescription: {
-    marginTop: 7,
-    fontSize: 13,
-    lineHeight: 20,
-    color: '#756C60',
-    maxWidth: '94%',
   },
   subtitleTag: {
     marginTop: 2,
@@ -431,6 +601,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 10,
   },
+  cardFooterCompact: {
+    marginTop: 8,
+  },
   durationWrap: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -442,19 +615,8 @@ const styles = StyleSheet.create({
     color: '#7A7164',
     fontFamily: 'Inter_600SemiBold',
   },
-  ctaButton: {
-    minWidth: 116,
-    paddingHorizontal: 16,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#214C36',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  ctaText: {
-    fontSize: 15,
-    lineHeight: 18,
-    color: '#FFF9F0',
-    fontFamily: 'Inter_700Bold',
+  durationTextCompact: {
+    fontSize: 11,
+    lineHeight: 14,
   },
 });

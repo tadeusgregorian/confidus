@@ -53,6 +53,41 @@ const lessons: DayTimelineItem[] = [
   },
 ];
 
+const lessonFocusVisuals = [
+  {
+    imageUrl: 'https://picsum.photos/seed/confidus-lesson-1/1200/1600',
+    tint: 'rgba(237, 126, 78, 0.18)',
+  },
+  {
+    imageUrl: 'https://picsum.photos/seed/confidus-lesson-2/1200/1600',
+    tint: 'rgba(214, 161, 93, 0.16)',
+  },
+  {
+    imageUrl: 'https://picsum.photos/seed/confidus-lesson-3/1200/1600',
+    tint: 'rgba(89, 129, 84, 0.16)',
+  },
+  {
+    imageUrl: 'https://picsum.photos/seed/confidus-lesson-4/1200/1600',
+    tint: 'rgba(111, 145, 115, 0.18)',
+  },
+  {
+    imageUrl: 'https://picsum.photos/seed/confidus-lesson-5/1200/1600',
+    tint: 'rgba(204, 124, 84, 0.16)',
+  },
+  {
+    imageUrl: 'https://picsum.photos/seed/confidus-lesson-6/1200/1600',
+    tint: 'rgba(190, 145, 88, 0.18)',
+  },
+  {
+    imageUrl: 'https://picsum.photos/seed/confidus-lesson-7/1200/1600',
+    tint: 'rgba(90, 121, 73, 0.18)',
+  },
+  {
+    imageUrl: 'https://picsum.photos/seed/confidus-lesson-8/1200/1600',
+    tint: 'rgba(132, 115, 80, 0.18)',
+  },
+] as const;
+
 export default function LessonsScreen() {
   return (
     <DayTimelineScreen
@@ -60,6 +95,7 @@ export default function LessonsScreen() {
       title="Lessons"
       items={lessons}
       currentDayIndex={1}
+      focusVisuals={lessonFocusVisuals}
     />
   );
 }
