@@ -16,7 +16,6 @@ export function CustomTabButton(props: CustomTabButtonProps) {
   const { accessibilityState, children, routeName, ...pressableProps } = props;
   const isSelected = accessibilityState?.selected ?? false;
 
-  // Get label from route name
   const getLabel = () => {
     if (!routeName) return "";
     if (routeName === "index") return "Lessons";
@@ -36,6 +35,7 @@ export function CustomTabButton(props: CustomTabButtonProps) {
               styles.selectedButton,
               {
                 backgroundColor: colors.tabBarActiveBg,
+                shadowColor: colors.tabBarActiveBg,
               },
             ]
           : [
@@ -74,11 +74,15 @@ const styles = StyleSheet.create({
     borderRadius: 27,
   },
   selectedButton: {
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     height: 54,
     borderRadius: 27,
     flexDirection: "row",
-    minWidth: 112,
+    minWidth: 118,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.22,
+    shadowRadius: 18,
+    elevation: 8,
   },
   content: {
     flexDirection: "row",

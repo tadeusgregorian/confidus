@@ -8,6 +8,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Shadows } from '@/constants/shadows';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { markAudioLessonCompleted } from '@/utils/storage';
 
 type GroupedLesson = {
   id: string;
@@ -124,6 +125,7 @@ export default function LessonPlayerScreen() {
   const [position, setPosition] = useState(0);
   const [duration, setDuration] = useState(0);
   const [progressInterval, setProgressInterval] = useState<ReturnType<typeof setInterval> | null>(null);
+  const [isCompleted, setIsCompleted] = useState(false);
 
   const lesson = getLessonData(id || '1');
   const resolvedLesson = {
@@ -185,6 +187,10 @@ export default function LessonPlayerScreen() {
             clearInterval(interval);
             setIsPlaying(false);
             setProgressInterval(null);
+            if (id) {
+              void markAudioLessonCompleted(id);
+            }
+            setIsCompleted(true);
             return totalDuration;
           }
           return next;
@@ -239,6 +245,11 @@ export default function LessonPlayerScreen() {
             <View style={[styles.metaChip, { backgroundColor: palette.accentSoft }]}>
               <ThemedText style={[styles.metaChipText, { color: palette.accent }]}>{resolvedLesson.duration}</ThemedText>
             </View>
+            {isCompleted ? (
+              <View style={[styles.metaChip, { backgroundColor: '#D8C3FF' }]}>
+                <ThemedText style={[styles.metaChipText, { color: '#3C2E72' }]}>Done</ThemedText>
+              </View>
+            ) : null}
           </View>
 
           <View style={[styles.rail, { backgroundColor: palette.rail }]}>
