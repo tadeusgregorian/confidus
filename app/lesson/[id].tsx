@@ -7,7 +7,6 @@ import { ActivityIndicator, Platform, Pressable, ScrollView, StyleSheet, View } 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Shadows } from '@/constants/shadows';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { markAudioLessonCompleted } from '@/utils/storage';
 
 type GroupedLesson = {
@@ -95,30 +94,16 @@ export default function LessonPlayerScreen() {
     author?: string;
     category?: 'Theory' | 'Meditation' | 'Moment';
   }>();
-  const colorScheme = useColorScheme();
-  const isDark = (colorScheme ?? 'light') === 'dark';
-
-  const palette = isDark
-    ? {
-        appBg: '#10131A',
-        cardBg: '#1E2431',
-        cardBorder: '#2A3140',
-        ink: '#F3F4F6',
-        mutedInk: '#9CA3AF',
-        rail: '#313A4C',
-        accent: '#94A3B8',
-        accentSoft: '#273042',
-      }
-    : {
-        appBg: '#F3F4F6',
-        cardBg: '#FFFFFF',
-        cardBorder: '#E5E7EB',
-        ink: '#151A22',
-        mutedInk: '#6B7280',
-        rail: '#E5E7EB',
-        accent: '#64748B',
-        accentSoft: '#EEF2F7',
-      };
+  const palette = {
+    appBg: '#FFFFFF',
+    cardBg: '#FFFFFF',
+    cardBorder: '#E5E7EB',
+    ink: '#151A22',
+    mutedInk: '#6B7280',
+    rail: '#E5E7EB',
+    accent: '#64748B',
+    accentSoft: '#EEF2F7',
+  };
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -208,7 +193,7 @@ export default function LessonPlayerScreen() {
 
   return (
     <ThemedView style={[styles.container, { backgroundColor: palette.appBg }]}> 
-      <StatusBar style={isDark ? 'light' : 'dark'} />
+      <StatusBar style="dark" />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={[styles.headerRow, { paddingTop: Platform.OS === 'ios' ? 56 : 28 }]}> 

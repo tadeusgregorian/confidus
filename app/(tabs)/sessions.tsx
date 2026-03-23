@@ -193,7 +193,7 @@ export default function SessionsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F4F1EA',
+    backgroundColor: '#FFFFFF',
   },
   content: {
     paddingTop: 20,
@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#F4F1EA',
+    backgroundColor: '#BDBDBD',
   },
   markerDotDone: {
     width: 8,

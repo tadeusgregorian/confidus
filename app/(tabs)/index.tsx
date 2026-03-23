@@ -12,6 +12,7 @@ type LessonItem = {
   id: string;
   title: string;
   duration: string;
+  description: string;
 };
 
 const SPINE_CENTER_X = 28;
@@ -19,14 +20,14 @@ const SPINE_WIDTH = 4;
 const MARKER_COLUMN_WIDTH = 56;
 
 const lessons: LessonItem[] = [
-  { id: '1', title: 'Confidence Comes After Action', duration: '15:00' },
-  { id: '2', title: 'Confidence Comes After Action', duration: '12:00' },
-  { id: '3', title: 'Introversion Is Not Shyness', duration: '18:00' },
-  { id: '4', title: 'Introversion Is Not Shyness', duration: '22:00' },
-  { id: '5', title: 'Confident People Act Despite Fear', duration: '17:00' },
-  { id: '6', title: 'Confident People Act Despite Fear', duration: '14:00' },
-  { id: '7', title: 'Full Catastrophe Living', duration: '17:00' },
-  { id: '8', title: 'Full Catastrophe Living', duration: '14:00' },
+  { id: '1', title: 'Confidence Comes After Action', duration: '15:00', description: 'A grounded starting point for building real social courage.' },
+  { id: '2', title: 'Confidence Comes After Action', duration: '12:00', description: 'A shorter practice to turn intention into visible movement.' },
+  { id: '3', title: 'Introversion Is Not Shyness', duration: '18:00', description: 'A reframing lesson on quiet presence and self-trust.' },
+  { id: '4', title: 'Introversion Is Not Shyness', duration: '22:00', description: 'A deeper reflection on calm identity beyond fear.' },
+  { id: '5', title: 'Confident People Act Despite Fear', duration: '17:00', description: 'A practical reset for action even when nerves are present.' },
+  { id: '6', title: 'Confident People Act Despite Fear', duration: '14:00', description: 'A concise reminder that courage can come before certainty.' },
+  { id: '7', title: 'Full Catastrophe Living', duration: '17:00', description: 'An invitation to meet intensity with steadiness.' },
+  { id: '8', title: 'Full Catastrophe Living', duration: '14:00', description: 'A lighter integration session for everyday resilience.' },
 ];
 
 export default function LessonsScreen() {
@@ -140,6 +141,10 @@ export default function LessonsScreen() {
                       {item.title}
                     </ThemedText>
 
+                    <ThemedText style={styles.cardDescription} numberOfLines={1}>
+                      {item.description}
+                    </ThemedText>
+
                     {isCurrent ? (
                       <View style={styles.ctaButton}>
                         <MaterialIcons name="play-arrow" size={14} color="#101010" />
@@ -160,7 +165,7 @@ export default function LessonsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F4F1EA',
+    backgroundColor: '#FFFFFF',
   },
   content: {
     paddingTop: 20,
@@ -248,7 +253,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#F4F1EA',
+    backgroundColor: '#BDBDBD',
   },
   markerDotDone: {
     width: 8,
@@ -333,6 +338,13 @@ const styles = StyleSheet.create({
     fontSize: 17,
     lineHeight: 22,
     fontFamily: 'Inter_700Bold',
+  },
+  cardDescription: {
+    marginTop: 4,
+    color: '#9A9A9A',
+    fontSize: 12,
+    lineHeight: 16,
+    fontFamily: 'Inter_400Regular',
   },
   ctaButton: {
     marginTop: 12,
