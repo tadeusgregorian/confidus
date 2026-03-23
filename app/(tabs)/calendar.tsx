@@ -23,6 +23,7 @@ import {
 const HOLD_DURATION_MS = 2200;
 const COMMITMENT_MESSAGE =
   'I commit to challenge myself today, grow with intention, and become the person I want to be.';
+const COMMITMENT_WORDS = COMMITMENT_MESSAGE.split(' ');
 
 function toLocalDateString(date: Date): string {
   const year = date.getFullYear();
@@ -49,7 +50,6 @@ export default function CalendarScreen() {
   const successTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const holdStartRef = useRef(0);
   const checkAnim = useRef(new Animated.Value(0)).current;
-  const donePulseAnim = useRef(new Animated.Value(1)).current;
 
   const now = new Date();
   const year = now.getFullYear();
@@ -109,33 +109,6 @@ export default function CalendarScreen() {
       };
     }, [loadData])
   );
-
-  useEffect(() => {
-    if (!todayCommitted) {
-      donePulseAnim.setValue(1);
-      return;
-    }
-
-    const pulse = Animated.loop(
-      Animated.sequence([
-        Animated.timing(donePulseAnim, {
-          toValue: 1.08,
-          duration: 900,
-          useNativeDriver: true,
-        }),
-        Animated.timing(donePulseAnim, {
-          toValue: 1,
-          duration: 900,
-          useNativeDriver: true,
-        }),
-      ])
-    );
-
-    pulse.start();
-    return () => {
-      pulse.stop();
-    };
-  }, [todayCommitted, donePulseAnim]);
 
   const openOverlay = () => {
     resetOverlayState();
@@ -223,6 +196,12 @@ export default function CalendarScreen() {
     setReadyToConfirm(false);
   };
 
+  const rsvpIndex = Math.min(
+    COMMITMENT_WORDS.length - 1,
+    Math.floor(holdProgress * COMMITMENT_WORDS.length)
+  );
+  const currentWord = COMMITMENT_WORDS[rsvpIndex] ?? COMMITMENT_WORDS[0];
+
   return (
     <ThemedView style={styles.container}>
       <ThemedView style={styles.header}>
@@ -281,66 +260,38 @@ export default function CalendarScreen() {
         </View>
       </ThemedView>
 
-      {todayCommitted ? (
-        <ThemedView
-          style={[
-            styles.doneCard,
-            {
-              backgroundColor: colorScheme === 'dark' ? '#1F3B2B' : '#ECFDF3',
-              borderColor: colors.border,
-            },
-          ]}
-        >
-          <Animated.View
-            style={[
-              styles.doneIconWrap,
-              {
-                backgroundColor: colors.success,
-                transform: [{ scale: donePulseAnim }],
-              },
-            ]}
-          >
-            <MaterialIcons name="check" size={30} color="#FFFFFF" />
-          </Animated.View>
-          <ThemedText style={[styles.doneTitle, { color: colors.success }]}>Commitment complete</ThemedText>
-          <ThemedText style={[styles.doneText, { color: colors.success }]}>
-            Commitment for today is done. Next one is due tomorrow.
-          </ThemedText>
-        </ThemedView>
-      ) : (
-        <Pressable
-          onPress={openOverlay}
-          style={({ pressed }) => [
-            styles.commitButton,
-            {
-              backgroundColor: colors.surfaceElevated,
-              borderColor: colors.border,
-              opacity: pressed ? 0.9 : 1,
-            },
-          ]}
-        >
-          <View style={[styles.commitIcon, { borderColor: colors.border, backgroundColor: colors.surface }]}>
-            <MaterialIcons name="pan-tool-alt" size={20} color={colors.accent} />
-          </View>
+      <Pressable
+        onPress={openOverlay}
+        style={({ pressed }) => [
+          styles.commitButton,
+          {
+            backgroundColor: colors.surfaceElevated,
+            borderColor: colors.border,
+            opacity: pressed ? 0.9 : 1,
+          },
+        ]}
+      >
+        <View style={[styles.commitIcon, { borderColor: colors.border, backgroundColor: colors.surface }]}>
+          <MaterialIcons name="pan-tool-alt" size={20} color={colors.accent} />
+        </View>
 
-          <ThemedText style={[styles.commitButtonText, { color: colors.text }]}>Make Commitment For Today</ThemedText>
-        </Pressable>
-      )}
+        <ThemedText style={[styles.commitButtonText, { color: colors.text }]}>Make Commitment For Today</ThemedText>
+      </Pressable>
 
       <Modal visible={overlayVisible} transparent animationType="fade" onRequestClose={closeOverlay}>
         <Pressable style={styles.modalBackdrop} onPress={closeOverlay}>
           <Pressable
             style={[
               styles.modalCard,
-              {
-                backgroundColor: colors.surfaceElevated,
-                borderColor: colors.border,
-              },
+              styles.modalCardDark,
             ]}
             onPress={() => {}}
           >
-            <ThemedText style={[styles.messageLabel, { color: colors.muted }]}>Commitment</ThemedText>
-            <ThemedText style={[styles.messageText, { color: colors.text }]}>{COMMITMENT_MESSAGE}</ThemedText>
+            <ThemedText style={styles.messageLabelDark}>Commitment</ThemedText>
+            <View style={styles.rsvpWrap}>
+              <ThemedText style={styles.rsvpWord}>{currentWord}</ThemedText>
+            </View>
+            <ThemedText style={styles.rsvpSentence}>{COMMITMENT_MESSAGE}</ThemedText>
 
             <View style={styles.holdCircleWrap}>
               <Pressable
@@ -350,8 +301,8 @@ export default function CalendarScreen() {
                 style={({ pressed }) => [
                   styles.holdCircle,
                   {
-                    borderColor: colors.accent,
-                    backgroundColor: pressed ? colors.accentSoft : colors.surface,
+                    borderColor: '#FFFFFF',
+                    backgroundColor: pressed ? 'rgba(255,255,255,0.16)' : 'rgba(255,255,255,0.08)',
                   },
                 ]}
               >
@@ -368,25 +319,25 @@ export default function CalendarScreen() {
                   <MaterialIcons
                     name={readyToConfirm ? 'fingerprint' : 'touch-app'}
                     size={44}
-                    color={colors.accent}
+                    color="#FFFFFF"
                   />
                 )}
               </Pressable>
             </View>
 
-            <View style={[styles.progressTrack, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <View style={styles.progressTrackDark}>
               <View
                 style={[
                   styles.progressFill,
                   {
                     width: `${holdProgress * 100}%`,
-                    backgroundColor: colors.accent,
+                    backgroundColor: '#FFFFFF',
                   },
                 ]}
               />
             </View>
 
-            <ThemedText style={[styles.holdHint, { color: colors.muted }]}> 
+            <ThemedText style={styles.holdHintDark}> 
               {showSuccess
                 ? 'Commitment saved'
                 : isSaving
@@ -443,39 +394,6 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     fontFamily: 'Inter_700Bold',
     flex: 1,
-  },
-  doneCard: {
-    marginTop: 14,
-    borderRadius: 16,
-    borderWidth: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 18,
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  doneIconWrap: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...Shadows.surfaceMd,
-  },
-  doneTitle: {
-    fontSize: 16,
-    lineHeight: 20,
-    fontFamily: 'Inter_700Bold',
-    marginTop: 2,
-    textAlign: 'center',
-  },
-  doneText: {
-    fontSize: 13,
-    lineHeight: 18,
-    fontFamily: 'Inter_600SemiBold',
-    textAlign: 'center',
-    maxWidth: 280,
   },
   calendarCard: {
     borderWidth: 1,
@@ -536,6 +454,10 @@ const styles = StyleSheet.create({
     padding: 16,
     ...Shadows.surfaceLg,
   },
+  modalCardDark: {
+    backgroundColor: '#050505',
+    borderColor: '#141414',
+  },
   messageLabel: {
     fontSize: 12,
     lineHeight: 14,
@@ -544,9 +466,40 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
     marginBottom: 6,
   },
+  messageLabelDark: {
+    fontSize: 12,
+    lineHeight: 14,
+    fontFamily: 'Inter_600SemiBold',
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+    marginBottom: 10,
+    color: 'rgba(255,255,255,0.58)',
+    textAlign: 'center',
+  },
   messageText: {
     fontSize: 14,
     lineHeight: 20,
+  },
+  rsvpWrap: {
+    minHeight: 132,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+  },
+  rsvpWord: {
+    fontSize: 44,
+    lineHeight: 52,
+    color: '#FFFFFF',
+    fontFamily: 'Inter_700Bold',
+    textAlign: 'center',
+    letterSpacing: -0.8,
+  },
+  rsvpSentence: {
+    fontSize: 12,
+    lineHeight: 18,
+    color: 'rgba(255,255,255,0.44)',
+    textAlign: 'center',
+    marginBottom: 8,
   },
   holdCircleWrap: {
     marginTop: 16,
@@ -567,6 +520,14 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 1,
   },
+  progressTrackDark: {
+    height: 8,
+    borderRadius: 999,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.12)',
+    backgroundColor: 'rgba(255,255,255,0.08)',
+  },
   progressFill: {
     height: '100%',
     borderRadius: 999,
@@ -577,5 +538,13 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 18,
     fontFamily: 'Inter_600SemiBold',
+  },
+  holdHintDark: {
+    marginTop: 10,
+    textAlign: 'center',
+    fontSize: 13,
+    lineHeight: 18,
+    fontFamily: 'Inter_600SemiBold',
+    color: 'rgba(255,255,255,0.74)',
   },
 });

@@ -1,8 +1,7 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { Image } from 'expo-image';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -24,10 +23,6 @@ type DayTimelineScreenProps = {
   items: DayTimelineItem[];
   currentDayIndex?: number;
   variant?: 'default' | 'orb';
-  focusVisuals?: ReadonlyArray<{
-    imageUrl: string;
-    tint: string;
-  }>;
 };
 
 export function DayTimelineScreen({
@@ -36,17 +31,9 @@ export function DayTimelineScreen({
   items,
   currentDayIndex = 1,
   variant = 'default',
-  focusVisuals,
 }: DayTimelineScreenProps) {
   const router = useRouter();
-  const { height } = useWindowDimensions();
   const [completedIds, setCompletedIds] = useState<string[]>([]);
-  const [focusedIndex, setFocusedIndex] = useState(0);
-
-  const hasFocusVisual = variant === 'default' && !!focusVisuals?.length;
-  const visual = hasFocusVisual ? focusVisuals[Math.min(focusedIndex, focusVisuals.length - 1)] : null;
-  const compactRowStep = 102;
-  const focusPanelHeight = Math.min(420, height * 0.45);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -69,57 +56,9 @@ export function DayTimelineScreen({
 
   return (
     <ThemedView style={styles.container}>
-      {visual ? (
-        <View
-          style={[
-            styles.focusVisualPanel,
-            {
-              height: focusPanelHeight,
-            },
-          ]}
-        >
-          <Image
-            source={{ uri: visual.imageUrl }}
-            style={styles.focusImage}
-            contentFit="cover"
-            transition={180}
-          />
-          <View style={[styles.focusImageTint, { backgroundColor: visual.tint }]} />
-          <View style={styles.focusImageShade} />
-          <View style={styles.focusImageLabel}>
-            <ThemedText style={styles.focusLabelDay}>{`Day ${focusedIndex + 1}`}</ThemedText>
-            <ThemedText style={styles.focusLabelTitle}>
-              {items[Math.min(focusedIndex, items.length - 1)]?.title}
-            </ThemedText>
-          </View>
-        </View>
-      ) : null}
-
       <ScrollView
-        style={hasFocusVisual ? styles.scrollWithVisual : undefined}
-        contentContainerStyle={[
-          styles.content,
-          hasFocusVisual && {
-            paddingBottom: focusPanelHeight + 56,
-          },
-        ]}
+        contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
-        scrollEventThrottle={16}
-        onScroll={(event) => {
-          if (!hasFocusVisual) {
-            return;
-          }
-          const nextIndex = Math.max(
-            0,
-            Math.min(
-              items.length - 1,
-              Math.round(event.nativeEvent.contentOffset.y / compactRowStep)
-            )
-          );
-          if (nextIndex !== focusedIndex) {
-            setFocusedIndex(nextIndex);
-          }
-        }}
       >
         <View style={styles.header}>
           <ThemedText style={styles.eyebrow}>{eyebrow}</ThemedText>
@@ -136,7 +75,6 @@ export function DayTimelineScreen({
             const isNext = index === currentDayIndex + 1;
             const isFadedFuture = index > currentDayIndex + 1;
             const isLast = index === items.length - 1;
-            const isFocused = hasFocusVisual && index === focusedIndex;
 
             return (
               <View
@@ -197,7 +135,6 @@ export function DayTimelineScreen({
                     variant === 'default' && styles.cardCompact,
                     variant === 'orb' && styles.cardOrb,
                     isCurrent && styles.cardCurrent,
-                    isFocused && styles.cardFocused,
                     pressed && styles.cardPressed,
                   ]}
                 >
@@ -269,55 +206,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F7F1E7',
   },
-  scrollWithVisual: {
-    zIndex: 1,
-  },
   content: {
     paddingHorizontal: 18,
     paddingTop: 58,
     paddingBottom: 42,
-  },
-  focusVisualPanel: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    overflow: 'hidden',
-    backgroundColor: '#EDE2D3',
-    zIndex: 3,
-  },
-  focusImage: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  focusImageTint: {
-    ...StyleSheet.absoluteFillObject,
-    opacity: 0.22,
-  },
-  focusImageShade: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(18,24,20,0.08)',
-  },
-  focusImageLabel: {
-    position: 'absolute',
-    left: 22,
-    right: 22,
-    bottom: 92,
-  },
-  focusLabelDay: {
-    fontSize: 11,
-    lineHeight: 14,
-    letterSpacing: 1.2,
-    textTransform: 'uppercase',
-    color: '#FFF8F0',
-    fontFamily: 'Inter_600SemiBold',
-  },
-  focusLabelTitle: {
-    marginTop: 6,
-    fontSize: 28,
-    lineHeight: 32,
-    color: '#FFF8F0',
-    fontFamily: 'CrimsonPro_600SemiBold',
-    maxWidth: '72%',
   },
   header: {
     marginBottom: 18,
@@ -456,16 +348,6 @@ const styles = StyleSheet.create({
     borderColor: '#E0D2BF',
     backgroundColor: '#FFFDF8',
     ...Shadows.surfaceLg,
-  },
-  cardFocused: {
-    borderWidth: 1.5,
-    borderColor: '#214C36',
-    backgroundColor: '#FFFDF8',
-    shadowColor: '#2B2116',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.12,
-    shadowRadius: 16,
-    elevation: 7,
   },
   cardPressed: {
     opacity: 0.9,

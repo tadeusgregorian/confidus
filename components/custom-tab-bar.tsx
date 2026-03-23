@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import { Platform, StyleSheet, View } from "react-native";
 
 import { Colors } from "@/constants/theme";
-import { Shadows } from "@/constants/shadows";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { isCommitmentCompletedToday } from "@/utils/storage";
 import { CustomTabButton } from "./custom-tab-button";
@@ -32,9 +31,9 @@ export function CustomTabBar({
       style={[
         styles.shell,
         {
-          bottom: Platform.OS === "ios" ? 26 : 18,
-          left: 16,
-          right: 16,
+          bottom: 0,
+          left: 0,
+          right: 0,
         },
       ]}
     >
@@ -114,15 +113,21 @@ const styles = StyleSheet.create({
   },
   container: {
     position: "relative",
-    height: 70,
-    borderRadius: 35,
+    width: "100%",
+    height: Platform.OS === "ios" ? 92 : 78,
+    borderRadius: 0,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 10,
+    paddingBottom: Platform.OS === "ios" ? 20 : 8,
+    paddingTop: 8,
     gap: 8,
     borderWidth: 0,
-    ...Shadows.floatingNav,
+    shadowOffset: { width: 0, height: -6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    elevation: 12,
     overflow: "visible",
   },
   badge: {
