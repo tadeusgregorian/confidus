@@ -12,60 +12,44 @@ import { getCompletedAudioLessonIds } from '@/utils/storage';
 type SessionItem = {
   id: string;
   title: string;
-  description: string;
   duration: string;
-  tag: string;
   imageUrl: string;
 };
+
+const SPINE_CENTER_X = 28;
+const SPINE_WIDTH = 4;
+const MARKER_COLUMN_WIDTH = 56;
 
 const sessions: SessionItem[] = [
   {
     id: 's1',
     title: 'The Strength Within',
-    description: 'Reconnect with your inner stability, self-trust, and quiet personal power.',
-    duration: '13 MIN',
-    tag: 'INNER STABILITY',
-    imageUrl: 'https://picsum.photos/seed/confidus-session-1/1200/1100',
+    duration: '08:30',
+    imageUrl: 'https://picsum.photos/seed/sessions-minimal-1/900/900?grayscale',
   },
   {
     id: 's2',
     title: 'The Curious Child',
-    description: 'A gentle journey into playfulness, openness, and the natural confidence of exploration.',
-    duration: '11 MIN',
-    tag: 'OPEN PRESENCE',
-    imageUrl: 'https://picsum.photos/seed/confidus-session-2/1200/1100',
+    duration: '12:45',
+    imageUrl: 'https://picsum.photos/seed/sessions-minimal-2/900/900?grayscale',
   },
   {
     id: 's3',
     title: 'Subconscious Roots',
-    description: 'Feel grounded, steady, and supported from within through a deep hypnotic session.',
-    duration: '13 MIN',
-    tag: 'DEEP GROUNDING',
-    imageUrl: 'https://picsum.photos/seed/confidus-session-3/1200/1100',
+    duration: '15:20',
+    imageUrl: 'https://picsum.photos/seed/sessions-minimal-3/900/900?grayscale',
   },
   {
     id: 's4',
     title: 'Beginner’s Mind',
-    description: 'Release self-judgment and enter social moments with freshness and openness.',
-    duration: '10 MIN',
-    tag: 'FRESH AWARENESS',
-    imageUrl: 'https://picsum.photos/seed/confidus-session-4/1200/1100',
+    duration: '10:10',
+    imageUrl: 'https://picsum.photos/seed/sessions-minimal-4/900/900?grayscale',
   },
   {
     id: 's5',
     title: 'The Calm Before Speaking',
-    description: 'Relax body and mind before conversations, meetings, or socially charged moments.',
-    duration: '9 MIN',
-    tag: 'SOFT LANDING',
-    imageUrl: 'https://picsum.photos/seed/confidus-session-5/1200/1100',
-  },
-  {
-    id: 's6',
-    title: 'Unshaken Presence',
-    description: 'Build emotional steadiness and stay centered while others are watching.',
-    duration: '12 MIN',
-    tag: 'STEADY CORE',
-    imageUrl: 'https://picsum.photos/seed/confidus-session-6/1200/1100',
+    duration: '09:15',
+    imageUrl: 'https://picsum.photos/seed/sessions-minimal-5/900/900?grayscale',
   },
 ];
 
@@ -75,64 +59,73 @@ export default function SessionsScreen() {
 
   useFocusEffect(
     React.useCallback(() => {
-      let isMounted = true;
+      let mounted = true;
 
-      const load = async () => {
+      const loadCompleted = async () => {
         const ids = await getCompletedAudioLessonIds();
-        if (isMounted) {
+        if (mounted) {
           setCompletedIds(ids);
         }
       };
 
-      void load();
+      void loadCompleted();
 
       return () => {
-        isMounted = false;
+        mounted = false;
       };
     }, [])
   );
 
-  const firstIncompleteIndex = sessions.findIndex((item) => !completedIds.includes(item.id));
-  const currentIndex = firstIncompleteIndex >= 0 ? firstIncompleteIndex : sessions.length - 1;
+  const currentIndex = Math.max(0, sessions.findIndex((item) => !completedIds.includes(item.id)));
+  const resolvedCurrentIndex =
+    currentIndex === -1 ? sessions.length - 1 : currentIndex;
 
   return (
     <ThemedView style={styles.container}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={styles.topBar}>
+          <MaterialIcons name="menu" size={24} color="#101010" />
+          <ThemedText style={styles.brand}>Celestial Sanctuary</ThemedText>
+          <MaterialIcons name="search" size={22} color="#101010" />
+        </View>
+
         <View style={styles.header}>
           <ThemedText style={styles.eyebrow}>Current Path</ThemedText>
-          <ThemedText type="title" style={styles.title}>
-            Your Curated Journey
-          </ThemedText>
-          <ThemedText style={styles.subtitle}>
-            Follow the guided resonance through the archive. Each step opens the next session.
-          </ThemedText>
+          <ThemedText style={styles.heroTitle}>Mind{'\n'}Awakening</ThemedText>
+          <View style={styles.heroRule} />
         </View>
 
         <View style={styles.timeline}>
+          <View style={styles.spine} />
+
           {sessions.map((item, index) => {
             const isCompleted = completedIds.includes(item.id);
-            const isCurrent = index === currentIndex;
-            const isLocked = index > currentIndex;
-            const isLast = index === sessions.length - 1;
+            const isCurrent = index === resolvedCurrentIndex;
+            const isLocked = index > resolvedCurrentIndex;
 
             return (
-              <View key={item.id} style={[styles.stepWrap, isLocked && styles.stepLocked]}>
-                {!isLast ? <View style={styles.connectorToNext} /> : null}
-
-                <View style={styles.markerWrap}>
+              <View key={item.id} style={styles.step}>
+                <View style={styles.markerColumn}>
                   <View
                     style={[
                       styles.marker,
-                      isCompleted && styles.markerCompleted,
                       isCurrent && styles.markerCurrent,
+                      isLocked && styles.markerLocked,
                     ]}
                   >
-                    {isCompleted ? (
-                      <MaterialIcons name="check" size={18} color="#FFF9F0" />
-                    ) : isCurrent ? (
-                      <MaterialIcons name="play-arrow" size={22} color="#FFF9F0" />
+                    {isCurrent ? (
+                      <MaterialIcons
+                        name="play-arrow"
+                        size={16}
+                        color="#D7FF00"
+                        style={styles.markerPlayIcon}
+                      />
+                    ) : isLocked ? (
+                      <MaterialIcons name="lock" size={14} color="#5C5C5C" />
+                    ) : isCompleted ? (
+                      <View style={styles.markerDotDone} />
                     ) : (
-                      <MaterialIcons name="lock" size={16} color="#B8B0A2" />
+                      <View style={styles.markerDot} />
                     )}
                   </View>
                 </View>
@@ -144,7 +137,7 @@ export default function SessionsScreen() {
                       params: {
                         id: item.id,
                         title: item.title,
-                        duration: item.duration.replace(' MIN', ':00'),
+                        duration: item.duration,
                         author: 'Sessions',
                         category: 'Meditation',
                       },
@@ -153,31 +146,39 @@ export default function SessionsScreen() {
                   style={({ pressed }) => [
                     styles.card,
                     isCurrent && styles.cardCurrent,
-                    isLocked && styles.cardLocked,
                     pressed && styles.cardPressed,
                   ]}
                 >
-                  <Image
-                    source={{ uri: item.imageUrl }}
-                    style={styles.cardImage}
-                    contentFit="cover"
-                    transition={150}
-                  />
+                  <View style={styles.cardInner}>
+                    <Image
+                      source={{ uri: item.imageUrl }}
+                      style={styles.thumb}
+                      contentFit="cover"
+                      transition={120}
+                    />
 
-                  <View style={styles.cardBody}>
-                    <View style={styles.topMetaRow}>
-                      <ThemedText style={[styles.statusLabel, isCurrent && styles.statusLabelCurrent]}>
-                        {`Lesson ${index + 1} • ${isCompleted ? 'Completed' : isCurrent ? 'Current Resonance' : 'Locked'}`}
+                    <View style={styles.metaRow}>
+                      <ThemedText style={styles.lessonMeta}>
+                        {`Lesson ${String(index + 1).padStart(2, '0')} · ${item.duration}`}
                       </ThemedText>
-                      <View style={[styles.durationPill, isCurrent && styles.durationPillCurrent]}>
-                        <ThemedText style={[styles.durationText, isCurrent && styles.durationTextCurrent]}>
-                          {item.duration}
-                        </ThemedText>
-                      </View>
+
+                      {isCompleted ? (
+                        <View style={styles.doneChip}>
+                          <ThemedText style={styles.doneChipText}>Done</ThemedText>
+                        </View>
+                      ) : isCurrent ? (
+                        <ThemedText style={styles.activeLabel}>• Active</ThemedText>
+                      ) : null}
                     </View>
 
                     <ThemedText style={styles.cardTitle}>{item.title}</ThemedText>
-                    <ThemedText style={styles.tag}>{item.tag}</ThemedText>
+
+                    {isCurrent ? (
+                      <View style={styles.ctaButton}>
+                        <MaterialIcons name="play-arrow" size={14} color="#101010" />
+                        <ThemedText style={styles.ctaText}>Continue Listening</ThemedText>
+                      </View>
+                    ) : null}
                   </View>
                 </Pressable>
               </View>
@@ -192,176 +193,213 @@ export default function SessionsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F7F1E7',
+    backgroundColor: '#F4F1EA',
   },
   content: {
-    paddingTop: 54,
+    paddingTop: 20,
     paddingBottom: 120,
     paddingHorizontal: 10,
   },
+  topBar: {
+    minHeight: 42,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 4,
+    marginBottom: 24,
+  },
+  brand: {
+    flex: 1,
+    marginLeft: 14,
+    color: '#101010',
+    fontSize: 18,
+    lineHeight: 22,
+    fontFamily: 'Inter_700Bold',
+  },
   header: {
-    paddingHorizontal: 6,
-    marginBottom: 26,
+    paddingHorizontal: 10,
+    marginBottom: 24,
   },
   eyebrow: {
     fontSize: 11,
     lineHeight: 14,
-    letterSpacing: 1.4,
+    letterSpacing: 2,
     textTransform: 'uppercase',
-    color: '#8A7B67',
+    color: '#7D7A73',
     fontFamily: 'Inter_600SemiBold',
   },
-  title: {
+  heroTitle: {
     marginTop: 8,
-    color: '#214C36',
-    fontSize: 34,
-    lineHeight: 42,
-    maxWidth: '80%',
+    color: '#111111',
+    fontSize: 58,
+    lineHeight: 50,
+    textTransform: 'uppercase',
+    fontFamily: 'Inter_700Bold',
   },
-  subtitle: {
+  heroRule: {
     marginTop: 18,
-    fontSize: 15,
-    lineHeight: 26,
-    color: '#6E665B',
-    maxWidth: '92%',
+    width: 88,
+    height: 4,
+    borderRadius: 999,
+    backgroundColor: '#111111',
   },
   timeline: {
     position: 'relative',
   },
-  stepWrap: {
-    position: 'relative',
-    marginBottom: 34,
-    paddingTop: 18,
-    zIndex: 2,
-  },
-  connectorToNext: {
+  spine: {
     position: 'absolute',
-    left: '50%',
-    marginLeft: -1,
-    top: '100%',
-    width: 2,
-    height: 34,
+    top: 6,
+    bottom: 0,
+    left: SPINE_CENTER_X - SPINE_WIDTH / 2,
+    width: SPINE_WIDTH,
     borderRadius: 999,
-    backgroundColor: '#DDD1BF',
-    zIndex: 0,
+    backgroundColor: '#111111',
   },
-  stepLocked: {
-    opacity: 0.5,
+  step: {
+    position: 'relative',
+    paddingLeft: MARKER_COLUMN_WIDTH,
+    marginBottom: 30,
   },
-  markerWrap: {
+  markerColumn: {
     position: 'absolute',
     top: 0,
-    left: '50%',
-    marginLeft: -22,
-    width: 44,
-    height: 44,
-    zIndex: 3,
+    left: SPINE_CENTER_X - MARKER_COLUMN_WIDTH / 2,
+    width: MARKER_COLUMN_WIDTH,
     alignItems: 'center',
-    justifyContent: 'center',
+    paddingTop: 12,
+    zIndex: 3,
   },
   marker: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#F2E6D7',
-    borderWidth: 3,
-    borderColor: '#FFF9F0',
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#111111',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  markerCompleted: {
-    backgroundColor: '#214C36',
+  markerDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#F4F1EA',
+  },
+  markerDotDone: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#D7FF00',
   },
   markerCurrent: {
-    backgroundColor: '#B85E35',
-    ...Shadows.surfaceLg,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#111111',
+    borderWidth: 2,
+    borderColor: '#D7FF00',
+    shadowColor: '#000000',
+    shadowOpacity: 0.14,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 5,
+  },
+  markerLocked: {
+    backgroundColor: '#D9D6CF',
+  },
+  markerPlayIcon: {
+    marginLeft: 1,
   },
   card: {
-    marginTop: 14,
-    borderRadius: 30,
-    overflow: 'hidden',
-    backgroundColor: '#FFF9F0',
-    position: 'relative',
-    zIndex: 2,
-    ...Shadows.surfaceLg,
-    shadowColor: '#2B2116',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.14,
-    shadowRadius: 24,
-    elevation: 10,
+    flex: 1,
+    marginLeft: 24,
+    borderRadius: 10,
+    backgroundColor: '#050505',
+    ...Shadows.surfaceMd,
   },
   cardCurrent: {
-    shadowColor: '#B85E35',
-    shadowOpacity: 0.14,
-  },
-  cardLocked: {
-    shadowOpacity: 0.04,
+    borderWidth: 1,
+    borderColor: '#D7FF00',
+    shadowColor: '#000000',
+    shadowOpacity: 0.35,
+    shadowRadius: 20,
+    elevation: 14,
   },
   cardPressed: {
     opacity: 0.92,
   },
-  cardImage: {
-    width: '100%',
-    height: 168,
-    backgroundColor: '#E9DECF',
+  cardInner: {
+    paddingHorizontal: 28,
+    paddingVertical: 30,
   },
-  cardBody: {
-    paddingHorizontal: 22,
-    paddingTop: 16,
-    paddingBottom: 16,
+  thumb: {
+    width: 58,
+    height: 58,
+    borderRadius: 4,
+    backgroundColor: '#2A2A2A',
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#3A3A3A',
   },
-  topMetaRow: {
+  metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 12,
+    gap: 10,
   },
-  statusLabel: {
-    fontSize: 10,
+  lessonMeta: {
+    fontSize: 11,
+    lineHeight: 14,
+    letterSpacing: 1.3,
+    textTransform: 'uppercase',
+    color: '#B0B0B0',
+    fontFamily: 'Inter_600SemiBold',
+    flex: 1,
+  },
+  doneChip: {
+    backgroundColor: '#D7FF00',
+    paddingHorizontal: 8,
+    height: 22,
+    borderRadius: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  doneChipText: {
+    color: '#111111',
+    fontSize: 11,
+    lineHeight: 13,
+    fontFamily: 'Inter_700Bold',
+    textTransform: 'uppercase',
+  },
+  activeLabel: {
+    color: '#D7FF00',
+    fontSize: 11,
     lineHeight: 13,
     letterSpacing: 1.1,
     textTransform: 'uppercase',
-    color: '#8A7B67',
-    fontFamily: 'Inter_600SemiBold',
-  },
-  statusLabelCurrent: {
-    color: '#B85E35',
+    fontFamily: 'Inter_700Bold',
   },
   cardTitle: {
-    marginTop: 12,
-    fontSize: 20,
-    lineHeight: 26,
-    color: '#214C36',
-    fontFamily: 'CrimsonPro_600SemiBold',
+    marginTop: 10,
+    color: '#FFFFFF',
+    fontSize: 24,
+    lineHeight: 30,
+    fontFamily: 'Inter_700Bold',
   },
-  durationPill: {
-    height: 24,
+  ctaButton: {
+    marginTop: 24,
+    height: 42,
     borderRadius: 12,
-    paddingHorizontal: 10,
+    backgroundColor: '#D7FF00',
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F1E6D7',
+    gap: 6,
   },
-  durationPillCurrent: {
-    backgroundColor: '#F3C1AA',
-  },
-  durationText: {
-    fontSize: 10,
-    lineHeight: 12,
-    color: '#8A7B67',
-    fontFamily: 'Inter_700Bold',
-    letterSpacing: 0.8,
-  },
-  durationTextCurrent: {
-    color: '#A84E2E',
-  },
-  tag: {
-    marginTop: 12,
-    fontSize: 10,
-    lineHeight: 13,
-    letterSpacing: 1,
+  ctaText: {
+    color: '#111111',
+    fontSize: 12,
+    lineHeight: 14,
+    letterSpacing: 1.2,
     textTransform: 'uppercase',
-    color: '#B2A897',
-    fontFamily: 'Inter_600SemiBold',
+    fontFamily: 'Inter_700Bold',
   },
 });
