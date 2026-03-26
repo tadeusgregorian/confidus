@@ -3,6 +3,7 @@ import { Image } from "expo-image";
 import { useFocusEffect, useRouter } from "expo-router";
 import React, { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
@@ -55,6 +56,7 @@ const sessions: SessionItem[] = [
 
 export default function SessionsScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [completedIds, setCompletedIds] = useState<string[]>([]);
 
   useFocusEffect(
@@ -82,23 +84,41 @@ export default function SessionsScreen() {
   );
   const resolvedCurrentIndex =
     currentIndex === -1 ? sessions.length - 1 : currentIndex;
+  const completedCount = sessions.filter((item) =>
+    completedIds.includes(item.id),
+  ).length;
+  const progressRatio =
+    sessions.length === 0 ? 0 : completedCount / sessions.length;
 
   return (
     <ThemedView style={styles.container}>
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[
+          styles.content,
+          { paddingTop: Math.max(insets.top + 10, 32) },
+        ]}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.topBar}>
-          <MaterialIcons name="menu" size={24} color="#101010" />
-          <ThemedText style={styles.brand}>Celestial Sanctuary</ThemedText>
-          <MaterialIcons name="search" size={22} color="#101010" />
-        </View>
-
         <View style={styles.header}>
           <ThemedText style={styles.eyebrow}>Current Path</ThemedText>
           <ThemedText style={styles.heroTitle}>Mind{"\n"}Awakening</ThemedText>
           <View style={styles.heroRule} />
+          <View style={styles.progressBlock}>
+            <View style={styles.progressHeader}>
+              <ThemedText style={styles.progressLabel}>Journey Progress</ThemedText>
+              <ThemedText style={styles.progressValue}>
+                {`${completedCount}/${sessions.length}`}
+              </ThemedText>
+            </View>
+            <View style={styles.progressTrack}>
+              <View
+                style={[
+                  styles.progressFill,
+                  { width: `${Math.max(progressRatio * 100, completedCount > 0 ? 8 : 0)}%` },
+                ]}
+              />
+            </View>
+          </View>
         </View>
 
         <View style={styles.timeline}>
@@ -126,8 +146,6 @@ export default function SessionsScreen() {
                         color="#D7FF00"
                         style={styles.markerPlayIcon}
                       />
-                    ) : isLocked ? (
-                      <MaterialIcons name="lock" size={14} color="#5C5C5C" />
                     ) : isCompleted ? (
                       <View style={styles.markerDotDone} />
                     ) : (
@@ -152,19 +170,39 @@ export default function SessionsScreen() {
                   style={({ pressed }) => [
                     styles.card,
                     isCurrent && styles.cardCurrent,
+                    isLocked && styles.cardFuture,
                     pressed && styles.cardPressed,
                   ]}
                 >
-                  <View style={styles.cardInner}>
-                    <Image
-                      source={{ uri: item.imageUrl }}
-                      style={styles.thumb}
-                      contentFit="cover"
-                      transition={120}
-                    />
+                  <Image
+                    source={{ uri: item.imageUrl }}
+                    style={[styles.heroImage, isLocked && styles.heroImageFuture]}
+                    contentFit="cover"
+                    transition={120}
+                  />
 
+                  <View style={[styles.lessonBadge, isLocked && styles.lessonBadgeFuture]}>
+                    <ThemedText
+                      style={[
+                        styles.lessonBadgeText,
+                        isLocked && styles.lessonBadgeTextFuture,
+                      ]}
+                    >
+                      {`Lesson ${index + 1}`}
+                    </ThemedText>
+                  </View>
+
+                  {isLocked ? (
+                    <View style={styles.lockBadge}>
+                      <MaterialIcons name="lock" size={14} color="#111111" />
+                    </View>
+                  ) : null}
+
+                  <View style={styles.cardInner}>
                     <View style={styles.metaRow}>
-                      <ThemedText style={styles.lessonMeta}>
+                      <ThemedText
+                        style={[styles.lessonMeta, isLocked && styles.lessonMetaFuture]}
+                      >
                         {`Lesson ${String(index + 1).padStart(2, "0")} · ${item.duration}`}
                       </ThemedText>
 
@@ -181,22 +219,25 @@ export default function SessionsScreen() {
                       ) : null}
                     </View>
 
-                    <ThemedText style={styles.cardTitle}>
-                      {item.title}
-                    </ThemedText>
-
-                    {isCurrent ? (
-                      <View style={styles.ctaButton}>
+                    <View style={styles.titleRow}>
+                      <View
+                        style={[
+                          styles.titlePlayBadge,
+                          isLocked && styles.titlePlayBadgeFuture,
+                        ]}
+                      >
                         <MaterialIcons
                           name="play-arrow"
-                          size={14}
-                          color="#101010"
+                          size={22}
+                          color={isLocked ? "#FFFFFF" : "#111111"}
                         />
-                        <ThemedText style={styles.ctaText}>
-                          Continue Listening
-                        </ThemedText>
                       </View>
-                    ) : null}
+                      <ThemedText
+                        style={[styles.cardTitle, isLocked && styles.cardTitleFuture]}
+                      >
+                        {item.title}
+                      </ThemedText>
+                    </View>
                   </View>
                 </Pressable>
               </View>
@@ -217,22 +258,6 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 120,
     paddingHorizontal: 10,
-  },
-  topBar: {
-    minHeight: 42,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 4,
-    marginBottom: 24,
-  },
-  brand: {
-    flex: 1,
-    marginLeft: 14,
-    color: "#101010",
-    fontSize: 18,
-    lineHeight: 22,
-    fontFamily: "Inter_700Bold",
   },
   header: {
     paddingHorizontal: 10,
@@ -258,6 +283,50 @@ const styles = StyleSheet.create({
     marginTop: 18,
     width: 88,
     height: 4,
+    borderRadius: 999,
+    backgroundColor: "#111111",
+  },
+  progressBlock: {
+    marginTop: 18,
+    width: "100%",
+    borderWidth: 1,
+    borderColor: "#DCD4C7",
+    borderRadius: 14,
+    backgroundColor: "rgba(255,255,255,0.72)",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  progressHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 8,
+  },
+  progressLabel: {
+    fontSize: 11,
+    lineHeight: 14,
+    letterSpacing: 1.2,
+    textTransform: "uppercase",
+    color: "#7D7A73",
+    fontFamily: "Inter_600SemiBold",
+  },
+  progressValue: {
+    fontSize: 11,
+    lineHeight: 14,
+    color: "#111111",
+    fontFamily: "Inter_700Bold",
+  },
+  progressTrack: {
+    height: 8,
+    borderRadius: 999,
+    backgroundColor: "#F1ECE3",
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "#E3DBCF",
+    padding: 1,
+  },
+  progressFill: {
+    height: "100%",
     borderRadius: 999,
     backgroundColor: "#111111",
   },
@@ -321,7 +390,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   markerLocked: {
-    backgroundColor: "#D9D6CF",
+    backgroundColor: "#111111",
   },
   markerPlayIcon: {
     marginLeft: 1,
@@ -331,7 +400,14 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     borderRadius: 10,
     backgroundColor: "#050505",
+    overflow: "hidden",
+    position: "relative",
     ...Shadows.surfaceMd,
+  },
+  cardFuture: {
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#D8D2C8",
   },
   cardCurrent: {
     borderWidth: 1,
@@ -345,17 +421,58 @@ const styles = StyleSheet.create({
     opacity: 0.92,
   },
   cardInner: {
-    paddingHorizontal: 28,
-    paddingVertical: 30,
+    paddingHorizontal: 14,
+    paddingTop: 12,
+    paddingBottom: 14,
   },
-  thumb: {
-    width: 58,
-    height: 58,
-    borderRadius: 4,
-    backgroundColor: "#2A2A2A",
-    marginBottom: 16,
+  heroImage: {
+    width: "100%",
+    aspectRatio: 2.2,
+    backgroundColor: "#1B1B1C",
+  },
+  heroImageFuture: {
+    opacity: 0.24,
+  },
+  lessonBadge: {
+    position: "absolute",
+    top: 10,
+    left: 10,
+    height: 24,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+    backgroundColor: "rgba(5, 5, 5, 0.72)",
     borderWidth: 1,
-    borderColor: "#3A3A3A",
+    borderColor: "rgba(255,255,255,0.16)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  lessonBadgeFuture: {
+    backgroundColor: "rgba(255,255,255,0.92)",
+    borderColor: "#D8D2C8",
+  },
+  lessonBadgeText: {
+    color: "#FFFFFF",
+    fontSize: 10,
+    lineHeight: 12,
+    letterSpacing: 1,
+    textTransform: "uppercase",
+    fontFamily: "Inter_700Bold",
+  },
+  lessonBadgeTextFuture: {
+    color: "#111111",
+  },
+  lockBadge: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "rgba(255,255,255,0.92)",
+    borderWidth: 1,
+    borderColor: "#D8D2C8",
+    alignItems: "center",
+    justifyContent: "center",
   },
   metaRow: {
     flexDirection: "row",
@@ -371,6 +488,9 @@ const styles = StyleSheet.create({
     color: "#B0B0B0",
     fontFamily: "Inter_600SemiBold",
     flex: 1,
+  },
+  lessonMetaFuture: {
+    color: "#5F5A53",
   },
   doneChip: {
     backgroundColor: "#D7FF00",
@@ -395,29 +515,37 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     fontFamily: "Inter_700Bold",
   },
-  cardTitle: {
+  titleRow: {
     marginTop: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  titlePlayBadge: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: "#D7FF00",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000000",
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
+  },
+  titlePlayBadgeFuture: {
+    backgroundColor: "#111111",
+    shadowOpacity: 0.06,
+  },
+  cardTitle: {
+    flex: 1,
     color: "#FFFFFF",
     fontSize: 24,
     lineHeight: 30,
     fontFamily: "Inter_700Bold",
   },
-  ctaButton: {
-    marginTop: 24,
-    height: 42,
-    borderRadius: 12,
-    backgroundColor: "#D7FF00",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-  },
-  ctaText: {
+  cardTitleFuture: {
     color: "#111111",
-    fontSize: 12,
-    lineHeight: 14,
-    letterSpacing: 1.2,
-    textTransform: "uppercase",
-    fontFamily: "Inter_700Bold",
   },
 });

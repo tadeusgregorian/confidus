@@ -6,12 +6,13 @@ import { CustomTabBar } from '@/components/custom-tab-bar';
 export default function TabLayout() {
   return (
     <Tabs
+      initialRouteName="dashboard"
       tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: false,
-        sceneContainerStyle: { backgroundColor: '#FFFFFF' },
       }}>
+      <Tabs.Screen name="dashboard" options={{ title: 'Dashboard' }} />
       <Tabs.Screen name="index" options={{ title: 'Lessons' }} />
       <Tabs.Screen name="sessions" options={{ title: 'Sessions' }} />
       <Tabs.Screen name="moments" options={{ title: 'Moments' }} />

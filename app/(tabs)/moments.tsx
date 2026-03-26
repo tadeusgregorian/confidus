@@ -1,20 +1,35 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import React from "react";
-import { FlatList, Pressable, StyleSheet, View } from "react-native";
-
-import { ThemedText } from "@/components/themed-text";
-import { ThemedView } from "@/components/themed-view";
-import { Shadows } from "@/constants/shadows";
-import { Colors } from "@/constants/theme";
-import { useColorScheme } from "@/hooks/use-color-scheme";
+import {
+  FlatList,
+  Image as RNImage,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
 type AudioItem = {
   id: string;
   title: string;
   duration: string;
-  icon: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
+  spriteIndex: number;
 };
+
+const BG = "#FFFFFF";
+const LINE = "rgba(17,17,17,0.16)";
+const LINE_SOFT = "rgba(17,17,17,0.08)";
+const MIST = "rgba(17,17,17,0.03)";
+const WHITE = "#111111";
+const WHITE_DIM = "rgba(17,17,17,0.58)";
+const WHITE_FAINT = "rgba(17,17,17,0.38)";
+const ICON_SHEET = require("../../assets/app-images/spiritual-icons.png");
+const ICON_SHEET_COLS = 8;
+const ICON_SHEET_ROWS = 12;
+const ICON_SIZE = 46;
+const ICON_SHEET_WIDTH = ICON_SIZE * ICON_SHEET_COLS;
+const ICON_SHEET_HEIGHT = ICON_SIZE * ICON_SHEET_ROWS;
 
 const TITLES = [
   "The Curious Child",
@@ -62,189 +77,226 @@ const DURATIONS = [
   "5:33",
 ] as const;
 
-const ICONS: readonly React.ComponentProps<
-  typeof MaterialCommunityIcons
->["name"][] = [
-  "flower-tulip-outline",
-  "sprout-outline",
-  "butterfly-outline",
-  "meditation",
-  "moon-waning-crescent",
-  "weather-sunny",
-  "star-four-points-outline",
-  "shimmer",
-  "waves",
-  "water-outline",
-  "fire",
-  "lightning-bolt-outline",
-  "heart-outline",
-  "bird",
-  "cloud-outline",
-  "snowflake",
-  "diamond-stone",
-  "head-heart-outline",
-  "compass-outline",
-  "lightbulb-on-outline",
-];
-
 const audioItems: AudioItem[] = TITLES.map((title, index) => ({
   id: `m-${index + 1}`,
   title,
   duration: DURATIONS[index],
-  icon: ICONS[index % ICONS.length],
+  spriteIndex: index,
 }));
+
+function getSpriteOffset(spriteIndex: number) {
+  const col = spriteIndex % ICON_SHEET_COLS;
+  const row = Math.floor(spriteIndex / ICON_SHEET_COLS);
+
+  return {
+    x: -(col * ICON_SIZE),
+    y: -(row * ICON_SIZE),
+  };
+}
 
 export default function MomentsScreen() {
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? "light"];
 
   return (
-    <ThemedView style={styles.container}>
+    <View style={styles.screen}>
+      <StatusBar style="dark" />
       <FlatList
         data={audioItems}
         numColumns={5}
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[
-          styles.content,
-          { backgroundColor: colors.background },
-        ]}
+        contentContainerStyle={styles.content}
         columnWrapperStyle={styles.column}
         ListHeaderComponent={
-          <View
-            style={[
-              styles.headerCard,
-              {
-                backgroundColor: colors.surfaceElevated,
-                borderColor: colors.border,
-              },
-            ]}
-          >
-            <ThemedText type="title">Moments</ThemedText>
-            <ThemedText style={[styles.subtitle, { color: colors.muted }]}>
-              Tap any symbol to open and play a short audio moment.
-            </ThemedText>
+          <View style={styles.headerBlock}>
+            <View style={styles.headerCard}>
+              <View style={styles.headerOrnament}>
+                <View style={styles.ornamentLine} />
+                <View style={styles.ornamentDiamond} />
+                <View style={styles.ornamentLine} />
+              </View>
+              <Text style={styles.eyebrow}>WHISPERS</Text>
+              <Text style={styles.screenTitle}>Moments</Text>
+              <View style={styles.titleUnderline} />
+              <Text style={styles.subtitle}>
+                Trace a symbol. Each opens a short passage — a breath between
+                thoughts.
+              </Text>
+            </View>
           </View>
         }
         renderItem={({ item, index }) => (
-          <Pressable
-            onPress={() =>
-              router.push({
-                pathname: "/lesson/[id]",
-                params: {
-                  id: item.id,
-                  title: item.title,
-                  duration: item.duration,
-                  author: "Moments",
-                  category: "Moment",
-                },
-              })
-            }
-            style={({ pressed }) => [
-              styles.gridItem,
-              index > 1 && styles.gridItemInactive,
-              {
-                opacity: pressed ? 0.8 : 1,
-              },
-            ]}
-          >
-            <View
-              style={[
-                styles.glyphStack,
-                {
-                  backgroundColor: colors.surfaceElevated,
-                },
-              ]}
-            >
-              <View
-                style={[
-                  styles.iconWrap,
-                  // { backgroundColor: colors.surfaceElevated },
+          (() => {
+            const offset = getSpriteOffset(item.spriteIndex);
+
+            return (
+              <Pressable
+                onPress={() =>
+                  router.push({
+                    pathname: "/lesson/[id]",
+                    params: {
+                      id: item.id,
+                      title: item.title,
+                      duration: item.duration,
+                      author: "Moments",
+                      category: "Moment",
+                    },
+                  })
+                }
+                style={({ pressed }) => [
+                  styles.gridItem,
+                  index > 1 && styles.gridItemInactive,
+                  { opacity: pressed ? 0.75 : 1 },
                 ]}
               >
-                <MaterialCommunityIcons
-                  name={item.icon}
-                  size={25}
-                  color={colors.accent}
-                />
-              </View>
-              <ThemedText style={[styles.index, { color: colors.mutedLight }]}>
-                {`${index + 1}`.padStart(2, "0")}
-              </ThemedText>
-            </View>
-          </Pressable>
+                <View style={styles.glyphRingOuter}>
+                  <View style={styles.glyphRingInner}>
+                    <View style={styles.spriteViewport}>
+                      <RNImage
+                        source={ICON_SHEET}
+                        style={[
+                          styles.spriteSheet,
+                          {
+                            transform: [
+                              { translateX: offset.x },
+                              { translateY: offset.y },
+                            ],
+                          },
+                        ]}
+                      />
+                    </View>
+                  </View>
+                </View>
+                <Text style={styles.indexLabel}>
+                  {`${index + 1}`.padStart(2, "0")}
+                </Text>
+              </Pressable>
+            );
+          })()
         )}
       />
-    </ThemedView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
+    backgroundColor: BG,
   },
   content: {
-    paddingTop: 52,
-    paddingHorizontal: 40,
-    paddingBottom: 28,
+    paddingTop: 56,
+    paddingHorizontal: 28,
+    paddingBottom: 32,
+  },
+  headerBlock: {
+    marginBottom: 28,
   },
   headerCard: {
     borderWidth: 1,
-    borderRadius: 16,
-    padding: 16,
+    borderColor: LINE,
+    paddingVertical: 22,
+    paddingHorizontal: 18,
+    backgroundColor: "#FFFFFF",
+  },
+  headerOrnament: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 20,
+    gap: 10,
+  },
+  ornamentLine: {
+    width: 36,
+    height: 1,
+    backgroundColor: LINE,
+  },
+  ornamentDiamond: {
+    width: 6,
+    height: 6,
+    backgroundColor: WHITE_FAINT,
+    transform: [{ rotate: "45deg" }],
+  },
+  eyebrow: {
+    textAlign: "center",
+    fontSize: 10,
+    letterSpacing: 3.5,
+    color: WHITE_DIM,
+    fontFamily: "Inter_600SemiBold",
+    marginBottom: 6,
+  },
+  screenTitle: {
+    textAlign: "center",
+    fontSize: 36,
+    lineHeight: 42,
+    color: WHITE,
+    fontFamily: "Inter_700Bold",
+    letterSpacing: 1,
+  },
+  titleUnderline: {
+    alignSelf: "center",
+    width: 48,
+    height: 1,
+    backgroundColor: LINE,
+    marginTop: 14,
     marginBottom: 16,
   },
   subtitle: {
-    marginTop: 6,
-    fontSize: 14,
+    textAlign: "center",
+    fontSize: 13,
     lineHeight: 20,
+    color: WHITE_DIM,
+    fontFamily: "Inter_400Regular",
+    paddingHorizontal: 4,
+    letterSpacing: 0.2,
   },
   column: {
     justifyContent: "space-between",
-    marginBottom: 8,
+    marginBottom: 10,
   },
   gridItem: {
     width: "20%",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 0.5,
+    paddingVertical: 4,
   },
   gridItemInactive: {
-    opacity: 0.38,
-    transform: [{ scale: 0.97 }],
+    opacity: 0.42,
   },
-  glyphStack: {
-    width: 56,
+  glyphRingOuter: {
+    width: 62,
+    height: 56,
     borderRadius: 16,
-    paddingTop: 6,
-    paddingBottom: 5,
+    borderWidth: 1,
+    borderColor: LINE,
     alignItems: "center",
     justifyContent: "center",
-    ...Shadows.surfaceSm,
+    backgroundColor: MIST,
   },
-  iconWrap: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+  glyphRingInner: {
+    width: 50,
+    height: 44,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: LINE_SOFT,
     alignItems: "center",
     justifyContent: "center",
   },
-  index: {
-    marginTop: 5,
-    fontSize: 10,
-    lineHeight: 12,
+  spriteViewport: {
+    width: ICON_SIZE,
+    height: ICON_SIZE,
+    overflow: "hidden",
+  },
+  spriteSheet: {
+    width: ICON_SHEET_WIDTH,
+    height: ICON_SHEET_HEIGHT,
+  },
+  indexLabel: {
+    marginTop: 8,
+    fontSize: 9,
+    lineHeight: 11,
     fontFamily: "Inter_700Bold",
-    letterSpacing: 0.4,
-  },
-  softBlurIcon: {
-    textShadowColor: "rgba(17,24,39,0.25)",
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 5,
-  },
-  softBlurText: {
-    textShadowColor: "rgba(17,24,39,0.2)",
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 4,
+    letterSpacing: 1.2,
+    color: WHITE_FAINT,
   },
 });

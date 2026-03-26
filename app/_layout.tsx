@@ -7,6 +7,9 @@ import { useEffect } from 'react';
 import 'react-native-reanimated';
 
 import {
+  CrimsonPro_600SemiBold,
+} from '@expo-google-fonts/crimson-pro';
+import {
   Inter_400Regular,
   Inter_600SemiBold,
   Inter_700Bold,
@@ -30,6 +33,7 @@ const NavigationTheme = {
 
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
+    CrimsonPro_600SemiBold,
     Inter_400Regular,
     Inter_600SemiBold,
     Inter_700Bold,
